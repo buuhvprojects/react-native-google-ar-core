@@ -78,7 +78,7 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
 
   @Override
   public CoordinatorLayout createViewInstance(ThemedReactContext context) {
-    view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet, null);
+    view = LayoutInflater.from(context).inflate(R.layout.main, null);
     if (view == null) {
       throw new NullPointerException("Layout not found");
     } else {
