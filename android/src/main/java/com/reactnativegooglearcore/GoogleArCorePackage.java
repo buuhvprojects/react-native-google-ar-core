@@ -19,11 +19,11 @@ public class GoogleArCorePackage implements ReactPackage {
         return modules;
     }
 
-  @NonNull
-  @Override
-  public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-    List<ViewManager> views = new ArrayList<>();
-    views.add(new GoogleArCoreViewManager(reactContext));
-    return views;
-  }
+    @NonNull
+    @Override
+    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
+        List<ViewManager> views = new ArrayList<>();
+        views.add(new GoogleArCoreViewManager(reactContext));
+        return views;
+    }
 }

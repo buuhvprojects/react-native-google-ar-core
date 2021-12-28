@@ -1,7 +1,5 @@
 package com.reactnativegooglearcore;
 
-import android.app.Activity;
-
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
@@ -26,16 +24,5 @@ public class GoogleArCoreModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-    @ReactMethod
-    public void createSession(Promise promise) {
-        promise.resolve(true);
-    }
-
-    @ReactMethod
-    public void trackAugmentedFaces(Promise promise) {
-      promise.resolve(true);
-    }
-
-    public static native boolean createSession();
-    public static native boolean trackAugmentedFaces();
+    public static native boolean capture();
 }

@@ -1,14 +1,18 @@
 package com.reactnativegooglearcore;
 
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.google.ar.core.AugmentedFace;
@@ -32,10 +36,14 @@ import com.reactnativegooglearcore.common.helpers.TrackingStateHelper;
 import com.reactnativegooglearcore.common.rendering.BackgroundRenderer;
 import com.reactnativegooglearcore.common.rendering.ObjectRenderer;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -66,6 +74,7 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   private final float[] rightEarMatrix = new float[16];
   private final float[] leftEarMatrix = new float[16];
   private static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
+  private boolean requestedCapture = false;
 
   public GoogleArCoreViewManager(ReactApplicationContext reactContext) {
     this.reactContext = reactContext;
@@ -307,6 +316,9 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
         noseObject.updateModelMatrix(noseMatrix, scaleFactor);
         noseObject.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, DEFAULT_COLOR);
       }
+      if (requestedCapture) {
+        saveBitmap(takeScreenshot(gl));
+      }
     } catch (Throwable t) {
       // Avoid crashing the application due to unhandled exceptions.
       Log.e(TAG, "Exception on the OpenGL thread", t);
@@ -319,5 +331,58 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
     Config config = new Config(session);
     config.setAugmentedFaceMode(Config.AugmentedFaceMode.MESH3D);
     session.configure(config);
+  }
+
+  private void saveBitmap(Bitmap bitmap) {
+    String root = Environment.getExternalStorageDirectory().toString();
+    File myDir = new File(root + "/images");
+    myDir.mkdirs();
+    Random generator = new Random();
+    int n = 10000;
+    n = generator.nextInt(n);
+    String fname = "Image-" + n + ".jpg";
+    File file = new File(myDir, fname);
+    if (file.exists()) file.delete();
+    try {
+      FileOutputStream out = new FileOutputStream(file);
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+      out.flush();
+      out.close();
+      Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    requestedCapture = false;
+  }
+  @ReactMethod
+  public void capture(Promise promise) {
+    this.requestedCapture = true;
+    promise.resolve(true);
+  }
+
+  public Bitmap takeScreenshot(GL10 mGL) {
+
+    final int mWidth = surfaceView.getWidth() ;
+    final int mHeight = surfaceView.getHeight();
+    final int startx = mHeight;
+    IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
+    IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
+    mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
+
+
+    // Convert upside down mirror-reversed image to right-side up normal
+    // image.
+    for (int i = 0; i < mHeight; i++) {
+      for (int j = 0; j < mWidth; j++) {
+        ibt.put((mHeight - i - 1) * mWidth + j, ib.get(i * mWidth + j));
+      }
+    }
+
+    Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+    mBitmap.copyPixelsFromBuffer(ibt);
+
+
+
+    return mBitmap;
   }
 }

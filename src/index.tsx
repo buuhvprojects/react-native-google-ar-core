@@ -1,4 +1,13 @@
-import { Platform, requireNativeComponent, UIManager } from 'react-native';
+/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
+import {
+    NativeModules,
+    Platform,
+    requireNativeComponent,
+    StyleProp,
+    UIManager,
+    ViewStyle,
+} from 'react-native';
 
 const LINKING_ERROR =
     `The package 'react-native-google-ar-core' doesn't seem to be linked. Make sure: \n\n` +
@@ -8,25 +17,35 @@ const LINKING_ERROR =
 
 type GoogleArCoreViewProps = {
     children?: Element[] | Element;
+    style?: StyleProp<ViewStyle>;
 };
 
-// const GoogleArCore = NativeModules.GoogleArCore
-//     ? NativeModules.GoogleArCore
-//     : new Proxy(
-//           {},
-//           {
-//               get() {
-//                   throw new Error(LINKING_ERROR);
-//               },
-//           }
-//       );
+const GoogleArCore = NativeModules.GoogleArCore
+    ? NativeModules.GoogleArCore
+    : new Proxy(
+          {},
+          {
+              get() {
+                  throw new Error(LINKING_ERROR);
+              },
+          }
+      );
 
 const ComponentName = 'GoogleArCoreView';
 
-const GoogleArCoreView =
+const CustomView =
     UIManager.getViewManagerConfig(ComponentName) != null
         ? requireNativeComponent<GoogleArCoreViewProps>(ComponentName)
         : () => {
               throw new Error(LINKING_ERROR);
           };
+
+export const capture = async (): Promise<void> => {
+    return await GoogleArCore.capture();
+};
+
+const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
+    return <CustomView {...props} style={[{ flex: 1 }, props.style]} />;
+};
+
 export default GoogleArCoreView;

@@ -1,13 +1,17 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import GoogleArCoreView from 'react-native-google-ar-core';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import GoogleArCoreView, { capture } from 'react-native-google-ar-core';
 
 const App = () => {
+    const onPress = async () => {
+        capture().then(() => console.log('Okay'));
+    }
     return (
-        <GoogleArCoreView style={{ flex: 1 }}>
+        <GoogleArCoreView>
             <View style={styles.mainContent}>
-                <Text style={styles.title}>Title</Text>
+                <TouchableOpacity onPress={onPress}>
+                    <Text style={styles.title}>Tirar foto</Text>
+                </TouchableOpacity>
             </View>
         </GoogleArCoreView>
     );
@@ -18,10 +22,18 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
         alignItems: 'center',
+        justifyContent: 'center',
+        alignContent: 'center',
     },
     title: {
         fontSize: 40,
-        color: '#FFF',
+        color: '#000',
+        alignSelf: 'center',
+        backgroundColor: '#FFF',
+        borderRadius: 4,
+        borderWidth: 1,
+        paddingLeft: 10,
+        paddingRight: 10,
     },
     bottomSheet: {
         backgroundColor: '#202122',
