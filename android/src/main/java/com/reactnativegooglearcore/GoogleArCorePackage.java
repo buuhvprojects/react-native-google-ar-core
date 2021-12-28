@@ -8,7 +8,6 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class GoogleArCorePackage implements ReactPackage {
@@ -20,11 +19,11 @@ public class GoogleArCorePackage implements ReactPackage {
         return modules;
     }
 
-    @NonNull
-    @Override
-    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-        List<ViewManager> views = new ArrayList<>();
-        views.add(new GoogleArCoreViewManager(reactContext));
-        return views;
-    }
+  @NonNull
+  @Override
+  public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
+    List<ViewManager> views = new ArrayList<>();
+    views.add(new GoogleArCoreViewManager(reactContext));
+    return views;
+  }
 }
