@@ -1,6 +1,5 @@
 package com.reactnativegooglearcore;
 
-import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
@@ -8,13 +7,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.common.MapBuilder;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
 import com.google.ar.core.AugmentedFace;
 import com.google.ar.core.Camera;
 import com.google.ar.core.CameraConfig;
@@ -31,19 +35,17 @@ import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.reactnativegooglearcore.augmentedfaces.AugmentedFaceRenderer;
 import com.reactnativegooglearcore.common.helpers.CameraPermissionHelper;
 import com.reactnativegooglearcore.common.helpers.DisplayRotationHelper;
+import com.reactnativegooglearcore.common.helpers.SaveBitmapFile;
 import com.reactnativegooglearcore.common.helpers.SnackbarHelper;
 import com.reactnativegooglearcore.common.helpers.TrackingStateHelper;
 import com.reactnativegooglearcore.common.rendering.BackgroundRenderer;
 import com.reactnativegooglearcore.common.rendering.ObjectRenderer;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -75,6 +77,8 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   private final float[] leftEarMatrix = new float[16];
   private static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
   private boolean requestedCapture = false;
+
+  private String DIRECTORY = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
 
   public GoogleArCoreViewManager(ReactApplicationContext reactContext) {
     this.reactContext = reactContext;
@@ -156,7 +160,7 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
         }
 
         // Create the session and configure it to use a front-facing (selfie) camera.
-        session = new Session(/* context= */ this.reactContext, EnumSet.noneOf(Session.Feature.class));
+          session = new Session(/* context= */ this.reactContext, EnumSet.noneOf(Session.Feature.class));
         CameraConfigFilter cameraConfigFilter = new CameraConfigFilter(session);
         cameraConfigFilter.setFacingDirection(CameraConfig.FacingDirection.FRONT);
         List<CameraConfig> cameraConfigs = session.getSupportedCameraConfigs(cameraConfigFilter);
@@ -317,7 +321,8 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
         noseObject.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, DEFAULT_COLOR);
       }
       if (requestedCapture) {
-        saveBitmap(takeScreenshot(gl));
+        requestedCapture = false;
+        saveBitmap(gl);
       }
     } catch (Throwable t) {
       // Avoid crashing the application due to unhandled exceptions.
@@ -333,56 +338,75 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
     session.configure(config);
   }
 
-  private void saveBitmap(Bitmap bitmap) {
-    String root = Environment.getExternalStorageDirectory().toString();
-    File myDir = new File(root + "/images");
-    myDir.mkdirs();
-    Random generator = new Random();
-    int n = 10000;
-    n = generator.nextInt(n);
-    String fname = "Image-" + n + ".jpg";
-    File file = new File(myDir, fname);
-    if (file.exists()) file.delete();
-    try {
-      FileOutputStream out = new FileOutputStream(file);
-      bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-      out.flush();
-      out.close();
-      Log.i("TAG", "Image SAVED==========" + file.getAbsolutePath());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    requestedCapture = false;
+  /**
+   * This method maps the sending of the "onCapture" event to the JS "onCapture" function.
+   */
+  @Nullable
+  @Override
+  public Map getExportedCustomBubblingEventTypeConstants() {
+    return MapBuilder.builder().put(
+      "topChange",
+      MapBuilder.of(
+        "phasedRegistrationNames",
+        MapBuilder.of("bubbled", "onChange")
+      )
+    ).build();
   }
-  @ReactMethod
-  public void capture(Promise promise) {
+
+  public void onCaptureResult(String filePath) {
+    if (reactContext != null) {
+      Log.d("onCaptureResult", "Step 1");
+      WritableMap eventData = Arguments.createMap();
+      eventData.putString("filePath", filePath);
+      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onChange", eventData);
+    } else {
+      Log.d("onCaptureResult", "Step 1 falhou com reactContext IS NULL");
+    }
+  }
+  public void onFailedCapture(String errorMessage) {
+    if (reactContext != null) {
+      Log.d("onFailedCapture", "Step 1");
+      WritableMap eventData = Arguments.createMap();
+      eventData.putString("message", errorMessage);
+      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onFailedCapture", eventData);
+    } else {
+      Log.d("onFailedCapture", "Step 1 falhou com reactContext IS NULL");
+    }
+  }
+
+  /**
+   * Salva a imagem de camera que está sendo exibida na tela
+   * @param gl
+   */
+  private void saveBitmap(GL10 gl) {
+    SaveBitmapFile saveBitmapFile = new SaveBitmapFile(
+      DIRECTORY,
+      gl,
+      surfaceView.getWidth(),
+      surfaceView.getHeight()
+    );
+    saveBitmapFile.save();
+    String filePath = saveBitmapFile.filePath;
+    if (!filePath.isEmpty()) {
+      onCaptureResult(filePath);
+    } else {
+      onFailedCapture(saveBitmapFile.errorMessage);
+    }
+  }
+
+  /**
+   * Ativa o evento de capturar a imagem de camera que está sendo exibida na tela
+   * @param promise
+   */
+  public void setRequestedCapture(Promise promise) {
     this.requestedCapture = true;
     promise.resolve(true);
   }
-
-  public Bitmap takeScreenshot(GL10 mGL) {
-
-    final int mWidth = surfaceView.getWidth() ;
-    final int mHeight = surfaceView.getHeight();
-    final int startx = mHeight;
-    IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
-    IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
-    mGL.glReadPixels(0,startx, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
-
-
-    // Convert upside down mirror-reversed image to right-side up normal
-    // image.
-    for (int i = 0; i < mHeight; i++) {
-      for (int j = 0; j < mWidth; j++) {
-        ibt.put((mHeight - i - 1) * mWidth + j, ib.get(i * mWidth + j));
-      }
-    }
-
-    Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-    mBitmap.copyPixelsFromBuffer(ibt);
-
-
-
-    return mBitmap;
+  @ReactProp(name = "imagesDir")
+  public void setImagesDir(View view, @Nullable String dir) {
+    Log.d("setImagesDir", dir);
+    this.DIRECTORY += "/" + dir;
   }
 }

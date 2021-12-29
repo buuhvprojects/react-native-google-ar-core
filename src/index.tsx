@@ -1,6 +1,8 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
+    DeviceEventEmitter,
     NativeModules,
     Platform,
     requireNativeComponent,
@@ -15,9 +17,31 @@ const LINKING_ERROR =
     '- You rebuilt the app after installing the package\n' +
     '- You are not using Expo managed workflow\n';
 
+export type OnChangeEvent = {
+    filePath: string;
+};
+export type OnFailedCapture = {
+    [key: string]: string | number;
+};
+
 type GoogleArCoreViewProps = {
     children?: Element[] | Element;
     style?: StyleProp<ViewStyle>;
+    /**
+     * Método acionado quando o método capture termina de ser executado
+     * @todo esse método retorna um objeto com o filepath da imagem salva
+     */
+    onChange?: (event: OnChangeEvent) => void;
+    /**
+     * Método acionado quando o método capture falha
+     * @todo esse método retorna um objeto com o erro
+     */
+     onFailedCapture?: (event: OnFailedCapture) => void;
+    /**
+     * Pasta no dispositivo onde serão salvas as imagens. As imagens são salvas por padrão dento de Pictures. A pasta que você definir, será criada dentro de Pictures.
+     * @example imagesDir='myapp/media'
+     */
+    imagesDir?: string;
 };
 
 const GoogleArCore = NativeModules.GoogleArCore
@@ -33,6 +57,10 @@ const GoogleArCore = NativeModules.GoogleArCore
 
 const ComponentName = 'GoogleArCoreView';
 
+export const capture = async (): Promise<boolean> => {
+    return await GoogleArCore.capture();
+};
+
 const CustomView =
     UIManager.getViewManagerConfig(ComponentName) != null
         ? requireNativeComponent<GoogleArCoreViewProps>(ComponentName)
@@ -40,11 +68,33 @@ const CustomView =
               throw new Error(LINKING_ERROR);
           };
 
-export const capture = async (): Promise<void> => {
-    return await GoogleArCore.capture();
-};
-
 const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
+    const _onChange = useCallback(
+        (data) => {
+            if (props.onChange) {
+                props.onChange(data);
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [props.onChange]
+    );
+    const _onFailedCapture = useCallback(
+        (data) => {
+            if (props.onFailedCapture) {
+                props.onFailedCapture(data);
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [props.onFailedCapture]
+    );
+    useEffect(() => {
+        DeviceEventEmitter.addListener('onChange', _onChange);
+        DeviceEventEmitter.addListener('onFailedCapture', _onFailedCapture);
+        return () => {
+            DeviceEventEmitter.removeListener('onChange', _onChange);
+            DeviceEventEmitter.removeListener('onFailedCapture', _onFailedCapture);
+        }
+    }, [_onChange, _onFailedCapture]);
     return <CustomView {...props} style={[{ flex: 1 }, props.style]} />;
 };
 

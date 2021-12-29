@@ -1,13 +1,35 @@
+/* eslint-disable prettier/prettier */
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import GoogleArCoreView, { capture } from 'react-native-google-ar-core';
+import {
+    View,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    ToastAndroid,
+} from 'react-native';
+import GoogleArCoreView, {
+    capture as GoogleArCoreCapture,
+    OnChangeEvent,
+    OnFailedCapture,
+} from 'react-native-google-ar-core';
 
 const App = () => {
     const onPress = async () => {
-        capture().then(() => console.log('Okay'));
+        const response = await GoogleArCoreCapture();
+        if (response === true) {
+            ToastAndroid.show('Captura Solicitada', 1000);
+        } else {
+            ToastAndroid.show('Captura Falhou', 1000);
+        }
+    };
+    const onChange = (event: OnChangeEvent) => {
+        console.log('OnChangeEvent', event);
+    };
+    const onFailedCapture = (event: OnFailedCapture) => {
+        console.log('OnFailedCapture', event);
     }
     return (
-        <GoogleArCoreView>
+        <GoogleArCoreView onChange={onChange} imagesDir='/BuuhV' onFailedCapture={onFailedCapture}>
             <View style={styles.mainContent}>
                 <TouchableOpacity onPress={onPress}>
                     <Text style={styles.title}>Tirar foto</Text>

@@ -11,11 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GoogleArCorePackage implements ReactPackage {
+  private GoogleArCoreViewManager viewManager;
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-        modules.add(new GoogleArCoreModule(reactContext));
+
+        createViewManagerRef(reactContext);
+
+        modules.add(new GoogleArCoreModule(reactContext, viewManager));
         return modules;
     }
 
@@ -23,7 +27,15 @@ public class GoogleArCorePackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         List<ViewManager> views = new ArrayList<>();
-        views.add(new GoogleArCoreViewManager(reactContext));
+
+        createViewManagerRef(reactContext);
+
+        views.add(viewManager);
         return views;
+    }
+    private void createViewManagerRef(ReactApplicationContext reactContext) {
+      if (viewManager == null) {
+        viewManager = new GoogleArCoreViewManager(reactContext);
+      }
     }
 }
