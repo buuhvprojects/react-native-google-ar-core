@@ -30,10 +30,10 @@ const App = () => {
     }
     return (
         <GoogleArCoreView
-            showFaceMakeup={false}
-            showLeftEar={true}
+            showFaceMakeup={true}
+            showLeftEar={false}
             showNose={false}
-            showRightEar={true}
+            showRightEar={false}
             onChange={onChange}
             imagesDir='/MyApp'
             onFailedCapture={onFailedCapture}>
