@@ -29,7 +29,14 @@ const App = () => {
         console.log('OnFailedCapture', event);
     }
     return (
-        <GoogleArCoreView onChange={onChange} imagesDir='/MyApp' onFailedCapture={onFailedCapture}>
+        <GoogleArCoreView
+            showFaceMakeup={false}
+            showLeftEar={true}
+            showNose={false}
+            showRightEar={true}
+            onChange={onChange}
+            imagesDir='/MyApp'
+            onFailedCapture={onFailedCapture}>
             <View style={styles.mainContent}>
                 <TouchableOpacity onPress={onPress}>
                     <Text style={styles.title}>Tirar foto</Text>

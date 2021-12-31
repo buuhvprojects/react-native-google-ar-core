@@ -42,6 +42,22 @@ type GoogleArCoreViewProps = {
      * @example imagesDir='myapp/media'
      */
     imagesDir?: string;
+    /**
+     * Exibe ou não exibe o efeito de maquiagem como sombras em cima dos olhos ou batom nos lábios
+     */
+    showFaceMakeup: boolean;
+    /**
+     * Exibe ou não exibe efeito na orelha esquerda
+     */
+    showLeftEar: boolean;
+    /**
+     * Exibe ou não exibe efeito na orelha direita
+     */
+    showRightEar: boolean;
+    /**
+     * Exibe ou não exibe efeito no nariz
+     */
+    showNose: boolean;
 };
 
 const GoogleArCore = NativeModules.GoogleArCore
