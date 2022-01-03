@@ -49,6 +49,14 @@ const App = () => {
 };
 ```
 
+## Props
+
+Property | Type | Description
+--- | --- | ---
+children | Element | React Native Element max 2 primary childrens 
+style | StyleProp | Camera Style
+onChange | Function | Método acionado quando o método capture termina de ser executado
+onFailedCapture | Function | Método acionado quando o método capture falha
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
