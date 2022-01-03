@@ -130,4 +130,77 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
       cameraEffect.setDrawFaceMakeup(value);
     }
   }
+
+  @ReactProp(name = "noseObj")
+  public void setNoseObj(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setNoseObj(value);
+    }
+  }
+
+  @ReactProp(name = "noseObjTexture")
+  public void setNoseObjTexture(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setNoseObjTexture(value);
+    }
+  }
+
+  @ReactProp(name = "leftEarObj")
+  public void setLeftEarObj(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setLeftEarObj(value);
+    }
+  }
+
+  @ReactProp(name = "leftEarObjTexture")
+  public void setLeftEarObjTexture(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setLeftEarObjTexture(value);
+    }
+  }
+
+  @ReactProp(name = "rightEarObj")
+  public void setRightEarObj(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setRightEarObj(value);
+    }
+  }
+
+  @ReactProp(name = "rightEarObjTexture")
+  public void setRightEarObjTexture(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setRightEarObjTexture(value);
+    }
+  }
+
+  @ReactProp(name = "faceMakeupTexture")
+  public void setFaceMakeupTexture(View view, @Nullable String value) {
+    if (cameraEffect != null) {
+      cameraEffect.setFaceMakeupTexture(value);
+    }
+  }
+
+  public void startRecording(Promise promise) {
+    if (cameraEffect != null) {
+      cameraEffect.startRecording(promise);
+    } else {
+      promise.resolve(false);
+    }
+  }
+
+  public void stopRecording(Promise promise) {
+    if (cameraEffect != null) {
+      cameraEffect.stopRecording(promise);
+    } else {
+      promise.resolve(false);
+    }
+  }
+
+  public void getRecordingStatus(Promise promise) {
+    if (cameraEffect != null) {
+      cameraEffect.getRecordingStatus(promise);
+    } else {
+      promise.resolve(false);
+    }
+  }
 }

@@ -221,6 +221,91 @@ public class ObjectRenderer {
     Matrix.setIdentityM(modelMatrix, 0);
   }
 
+  public void updateOnGlThread(Context context, String objAssetName, String diffuseTextureAssetName)
+      throws IOException {
+    // Read the texture.
+    Bitmap textureBitmap =
+        BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
+
+    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+    GLES20.glGenTextures(textures.length, textures, 0);
+    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+
+    GLES20.glTexParameteri(
+        GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
+    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, textureBitmap, 0);
+    GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+
+    textureBitmap.recycle();
+
+    ShaderUtil.checkGLError(TAG, "Texture loading");
+
+    // Read the obj file.
+    InputStream objInputStream = context.getAssets().open(objAssetName);
+    Obj obj = ObjReader.read(objInputStream);
+
+    // Prepare the Obj so that its structure is suitable for
+    // rendering with OpenGL:
+    // 1. Triangulate it
+    // 2. Make sure that texture coordinates are not ambiguous
+    // 3. Make sure that normals are not ambiguous
+    // 4. Convert it to single-indexed data
+    obj = ObjUtils.convertToRenderable(obj);
+
+    // OpenGL does not use Java arrays. ByteBuffers are used instead to provide data in a format
+    // that OpenGL understands.
+
+    // Obtain the data from the OBJ, as direct buffers:
+    IntBuffer wideIndices = ObjData.getFaceVertexIndices(obj, 3);
+    FloatBuffer vertices = ObjData.getVertices(obj);
+    FloatBuffer texCoords = ObjData.getTexCoords(obj, 2);
+    FloatBuffer normals = ObjData.getNormals(obj);
+
+    // Convert int indices to shorts for GL ES 2.0 compatibility
+    ShortBuffer indices =
+        ByteBuffer.allocateDirect(2 * wideIndices.limit())
+            .order(ByteOrder.nativeOrder())
+            .asShortBuffer();
+    while (wideIndices.hasRemaining()) {
+      indices.put((short) wideIndices.get());
+    }
+    indices.rewind();
+
+    int[] buffers = new int[2];
+    GLES20.glGenBuffers(2, buffers, 0);
+    vertexBufferId = buffers[0];
+    indexBufferId = buffers[1];
+
+    // Load vertex buffer
+    verticesBaseAddress = 0;
+    texCoordsBaseAddress = verticesBaseAddress + 4 * vertices.limit();
+    normalsBaseAddress = texCoordsBaseAddress + 4 * texCoords.limit();
+    final int totalBytes = normalsBaseAddress + 4 * normals.limit();
+
+    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBufferId);
+    GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, totalBytes, null, GLES20.GL_STATIC_DRAW);
+    GLES20.glBufferSubData(
+        GLES20.GL_ARRAY_BUFFER, verticesBaseAddress, 4 * vertices.limit(), vertices);
+    GLES20.glBufferSubData(
+        GLES20.GL_ARRAY_BUFFER, texCoordsBaseAddress, 4 * texCoords.limit(), texCoords);
+    GLES20.glBufferSubData(
+        GLES20.GL_ARRAY_BUFFER, normalsBaseAddress, 4 * normals.limit(), normals);
+    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
+    // Load index buffer
+    GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+    indexCount = indices.limit();
+    GLES20.glBufferData(
+        GLES20.GL_ELEMENT_ARRAY_BUFFER, 2 * indexCount, indices, GLES20.GL_STATIC_DRAW);
+    GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    ShaderUtil.checkGLError(TAG, "OBJ buffer load");
+
+    Matrix.setIdentityM(modelMatrix, 0);
+  }
+
   /**
    * Selects the blending mode for rendering.
    *
@@ -258,16 +343,18 @@ public class ObjectRenderer {
     // Compiles and loads the shader program based on the selected mode.
     Map<String, Integer> defineValuesMap = new TreeMap<>();
     defineValuesMap.put(USE_DEPTH_FOR_OCCLUSION_SHADER_FLAG, useDepthForOcclusion ? 1 : 0);
-
     final int vertexShader =
         ShaderUtil.loadGLShader(TAG, context, GLES20.GL_VERTEX_SHADER, VERTEX_SHADER_NAME);
     final int fragmentShader =
         ShaderUtil.loadGLShader(
             TAG, context, GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER_NAME, defineValuesMap);
 
-    program = GLES20.glCreateProgram();
+
+      program = GLES20.glCreateProgram();
+
     GLES20.glAttachShader(program, vertexShader);
     GLES20.glAttachShader(program, fragmentShader);
+
     GLES20.glLinkProgram(program);
     GLES20.glUseProgram(program);
 

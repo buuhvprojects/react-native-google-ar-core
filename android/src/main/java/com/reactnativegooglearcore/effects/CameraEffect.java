@@ -1,9 +1,12 @@
 package com.reactnativegooglearcore.effects;
 
+import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Environment;
 import android.util.Log;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.google.ar.core.AugmentedFace;
 import com.google.ar.core.Camera;
@@ -11,9 +14,11 @@ import com.google.ar.core.CameraConfig;
 import com.google.ar.core.CameraConfigFilter;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
+import com.google.ar.core.RecordingConfig;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
+import com.google.ar.core.exceptions.RecordingFailedException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
@@ -27,10 +32,12 @@ import com.reactnativegooglearcore.common.helpers.TrackingStateHelper;
 import com.reactnativegooglearcore.common.rendering.BackgroundRenderer;
 import com.reactnativegooglearcore.common.rendering.ObjectRenderer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -47,7 +54,7 @@ public class CameraEffect implements GLSurfaceView.Renderer {
 
   public final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
   public final AugmentedFaceRenderer augmentedFaceRenderer = new AugmentedFaceRenderer();
-  public final ObjectRenderer noseObject = new ObjectRenderer();
+  public ObjectRenderer noseObject = new ObjectRenderer();
   public final ObjectRenderer rightEarObject = new ObjectRenderer();
   public final ObjectRenderer leftEarObject = new ObjectRenderer();
 
@@ -63,22 +70,46 @@ public class CameraEffect implements GLSurfaceView.Renderer {
   private boolean drawNose = false;
   private boolean drawLeftEar = false;
   private boolean drawRightEar = false;
+  private boolean isRecording = false;
+
+  private String DIRECTORY = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
 
   SaveBitmap saveBitmap = new SaveBitmap();
+
+  private String noseObj = "models/nose.obj";
+  private String noseObjTexture = "models/nose_fur.png";
+  private String leftEarObj = "models/forehead_left.obj";
+  private String leftEarObjTexture = "models/ear_fur.png";
+  private String rightEarObj = "models/forehead_left.obj";
+  private String rightEarObjTexture = "models/ear_fur.png";
+  private String faceMakeupTexture = "models/freckles.png";
+
+  private boolean isObjChanged = false;
 
   public CameraEffect(ReactApplicationContext context, GLSurfaceView glSurfaceView) {
     this.reactContext = context;
     this.surfaceView = glSurfaceView;
+    surfaceView.setPreserveEGLContextOnPause(true);
     inflateLayout();
     setupRender();
   }
 
+  public void setCameraEffectDir(String dir) {
+    Log.d("setImagesDir", dir);
+    DIRECTORY += "/" + dir;
+  }
+
   public void setDir(String dir) {
+    setCameraEffectDir(dir);
     saveBitmap.setDIRECTORY(dir);
   }
 
   public void capture() {
     this.requestedCapture = true;
+  }
+
+  private void setIsRecording(boolean isRecording) {
+    this.isRecording = isRecording;
   }
 
   private void setupRender() {
@@ -186,39 +217,180 @@ public class CameraEffect implements GLSurfaceView.Renderer {
   }
 
   private void createNoseObject() throws IOException {
-    noseObject.createOnGlThread(reactContext, "models/nose.obj", "models/nose_fur.png");
+    noseObject.createOnGlThread(reactContext, noseObj, noseObjTexture);
     noseObject.setMaterialProperties(0.0f, 1.0f, 0.1f, 6.0f);
     noseObject.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
   }
+
   private void createRightEarObject() throws IOException {
-    rightEarObject.createOnGlThread(reactContext, "models/forehead_right.obj", "models/ear_fur.png");
+    rightEarObject.createOnGlThread(reactContext, rightEarObj, rightEarObjTexture);
     rightEarObject.setMaterialProperties(0.0f, 1.0f, 0.1f, 6.0f);
     rightEarObject.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
   }
+
   private void createLeftEarObject() throws IOException {
-    leftEarObject.createOnGlThread(reactContext, "models/forehead_left.obj", "models/ear_fur.png");
+    leftEarObject.createOnGlThread(reactContext, leftEarObj, leftEarObjTexture);
     leftEarObject.setMaterialProperties(0.0f, 1.0f, 0.1f, 6.0f);
     leftEarObject.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
   }
+
   private void createFaceMakeup() throws IOException {
-    augmentedFaceRenderer.createOnGlThread(reactContext, "models/freckles.png");
+    augmentedFaceRenderer.createOnGlThread(reactContext, faceMakeupTexture);
     augmentedFaceRenderer.setMaterialProperties(0.0f, 1.0f, 0.1f, 6.0f);
   }
 
+  public void setDrawFaceMakeup(boolean drawFaceMakeup) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.drawFaceMakeup = drawFaceMakeup;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
   public void setDrawLeftEar(boolean drawLeftEar) {
-    this.drawLeftEar = drawLeftEar;
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.drawLeftEar = drawLeftEar;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   public void setDrawRightEar(boolean drawRightEar) {
-    this.drawRightEar = drawRightEar;
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.drawRightEar = drawRightEar;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   public void setDrawNose(boolean drawNose) {
-    this.drawNose = drawNose;
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.drawNose = drawNose;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
-  public void setDrawFaceMakeup(boolean drawFaceMakeup) {
-    this.drawFaceMakeup = drawFaceMakeup;
+  public void setLeftEarObj(String leftEarObj) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.leftEarObj = leftEarObj;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void setLeftEarObjTexture(String leftEarObjTexture) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.leftEarObjTexture = leftEarObjTexture;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void setFaceMakeupTexture(String faceMakeupTexture) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.faceMakeupTexture = faceMakeupTexture;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void setNoseObj(String noseObj) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.noseObj = noseObj;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void setNoseObjTexture(String noseObjTexture) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.noseObjTexture = noseObjTexture;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void setRightEarObj(String rightEarObj) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.rightEarObj = rightEarObj;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void setRightEarObjTexture(String rightEarObjTexture) {
+    if (session != null) {
+      try {
+        surfaceView.onPause();
+        this.rightEarObjTexture = rightEarObjTexture;
+        this.isObjChanged = true;
+        surfaceView.onResume();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void replaceObjects() {
+    try {
+      createFaceMakeup();
+      createNoseObject();
+      createRightEarObject();
+      createLeftEarObject();
+    } catch (IOException e) {
+      Log.e(TAG, "Failed to read an asset file", e);
+    }
   }
 
   @Override
@@ -229,10 +401,10 @@ public class CameraEffect implements GLSurfaceView.Renderer {
       // Create the texture and pass it to ARCore session to be filled during update().
       backgroundRenderer.createOnGlThread(reactContext);
 
-      createFaceMakeup();
-      createNoseObject();
-      createRightEarObject();
-      createLeftEarObject();
+      if (!faceMakeupTexture.isEmpty()) createFaceMakeup();
+      if (!noseObj.isEmpty()) createNoseObject();
+      if (!rightEarObj.isEmpty()) createRightEarObject();
+      if (!leftEarObj.isEmpty()) createLeftEarObject();
 
     } catch (IOException e) {
       Log.e(TAG, "Failed to read an asset file", e);
@@ -247,6 +419,12 @@ public class CameraEffect implements GLSurfaceView.Renderer {
 
   @Override
   public void onDrawFrame(GL10 gl) {
+    if (isObjChanged) {
+      isObjChanged = false;
+      replaceObjects();
+      return;
+    }
+
 // Clear screen to notify driver it should not load any pixels from previous frame.
     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -324,13 +502,13 @@ public class CameraEffect implements GLSurfaceView.Renderer {
 
         // 3. Render the nose last so that it is not occluded by face mesh or by 3D objects attached
         // to the forehead regions.
-        if (drawNose) {
+        if (drawNose && noseObject != null) {
           face.getRegionPose(AugmentedFace.RegionType.NOSE_TIP).toMatrix(noseMatrix, 0);
           noseObject.updateModelMatrix(noseMatrix, scaleFactor);
           noseObject.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, DEFAULT_COLOR);
         }
       }
-      if (requestedCapture) {
+      if (requestedCapture && isRecording == false) {
         requestedCapture = false;
         saveBitmap.setReactContext(reactContext);
         saveBitmap.setSurfaceView(surfaceView);
@@ -341,6 +519,74 @@ public class CameraEffect implements GLSurfaceView.Renderer {
       Log.e(TAG, "Exception on the OpenGL thread", t);
     } finally {
       GLES20.glDepthMask(true);
+    }
+  }
+
+  public void startRecording(Promise promise) {
+    if (isRecording == false) {
+      Random generator = new Random();
+      int n = 10000;
+      n = generator.nextInt(n);
+      String videoName = "Video-" + n + ".mp4";
+      File myDir = new File(DIRECTORY);
+      if (!myDir.exists()) {
+        myDir.mkdirs();
+      }
+
+      File file = new File(myDir, videoName);
+      if (file.exists()) file.delete();
+      Uri destination = Uri.fromFile(file);
+      RecordingConfig recordingConfig =
+        new RecordingConfig(session)
+          .setMp4DatasetUri(destination)
+          .setAutoStopOnPause(true);
+      try {
+        session.startRecording(recordingConfig);
+        setIsRecording(true);
+      } catch (RecordingFailedException e) {
+        Log.e(TAG, "Failed to start recording", e);
+        promise.resolve(false);
+        return;
+      }
+      try {
+        final boolean cameraAvailable = requestCameraPermission();
+        if (cameraAvailable) {
+          session.resume();
+          promise.resolve(true);
+        } else {
+          promise.resolve(false);
+        }
+      } catch (CameraNotAvailableException e) {
+        Log.e(TAG, "Failed to start recording", e);
+        promise.resolve(false);
+      }
+    } else {
+      promise.resolve(false);
+    }
+  }
+  public void stopRecording(Promise promise) {
+    if (isRecording == true) {
+      try {
+        session.stopRecording();
+        setIsRecording(false);
+        promise.resolve(false);
+      } catch (RecordingFailedException e) {
+        Log.e(TAG, "Failed to stop recording", e);
+      }
+    } else {
+      promise.resolve(false);
+    }
+  }
+  public void getRecordingStatus(Promise promise) {
+    switch (session.getRecordingStatus()) {
+      case OK:
+        promise.resolve("STARTED");
+        break;
+      case NONE:
+        promise.resolve("STOPPED");
+        break;
+      case IO_ERROR:
+        promise.resolve("FAILED");
     }
   }
 }

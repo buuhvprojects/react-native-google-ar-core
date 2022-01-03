@@ -24,7 +24,12 @@ export type OnFailedCapture = {
     [key: string]: string | number;
 };
 
-type GoogleArCoreViewProps = {
+type Object3dData = {
+    obj: string;
+    texture: string;
+}
+
+interface GoogleArCoreViewProps {
     children?: Element[] | Element;
     style?: StyleProp<ViewStyle>;
     /**
@@ -45,20 +50,55 @@ type GoogleArCoreViewProps = {
     /**
      * Exibe ou não exibe o efeito de maquiagem como sombras em cima dos olhos ou batom nos lábios
      */
-    showFaceMakeup: boolean;
+    showFaceMakeup?: boolean;
     /**
      * Exibe ou não exibe efeito na orelha esquerda
      */
-    showLeftEar: boolean;
+    showLeftEar?: boolean;
     /**
      * Exibe ou não exibe efeito na orelha direita
      */
-    showRightEar: boolean;
+    showRightEar?: boolean;
     /**
      * Exibe ou não exibe efeito no nariz
      */
-    showNose: boolean;
+    showNose?: boolean;
+    /**
+     * Objeto 3D que será renderizado. Você deve adicionar a textura e o arquivo ".obj" dentro da  pasta assets/models do android
+     */
+    nose?: Object3dData;
+    /**
+     * Objeto 3D que será renderizado. Você deve adicionar a textura e o arquivo ".obj" dentro da  pasta assets/models do android
+     */
+    leftEar?: Object3dData;
+    /**
+     * Objeto 3D que será renderizado. Você deve adicionar a textura e o arquivo ".obj" dentro da  pasta assets/models do android
+     */
+    rightEar?: Object3dData;
+    /**
+     * Objeto 2D que será renderizado. Você deve adicionar a textura dentro da  pasta assets/models do android
+     */
+    faceMakeup?: string;
 };
+interface CustomViewProps {
+    children?: Element[] | Element;
+    style?: StyleProp<ViewStyle>;
+    onChange?: (event: OnChangeEvent) => void;
+     onFailedCapture?: (event: OnFailedCapture) => void;
+    imagesDir?: string;
+    showFaceMakeup?: boolean;
+    showLeftEar?: boolean;
+    showRightEar?: boolean;
+    showNose?: boolean;
+    noseObj?: string;
+    noseObjTexture?: string;
+    leftEarObj?: string;
+    leftEarObjTexture?: string;
+    rightEarObj?: string;
+    rightEarObjTexture?: string;
+    faceMakeupTexture?: string;
+}
+export type RecordingStatus = 'STARTED' | 'STOPPED' | 'FAILED';
 
 const GoogleArCore = NativeModules.GoogleArCore
     ? NativeModules.GoogleArCore
@@ -73,16 +113,44 @@ const GoogleArCore = NativeModules.GoogleArCore
 
 const ComponentName = 'GoogleArCoreView';
 
+/**
+ * Captura uma imagem da câmera
+ * @returns Promise<boolean>
+ */
 export const capture = async (): Promise<boolean> => {
     return await GoogleArCore.capture();
 };
-
-const CustomView =
-    UIManager.getViewManagerConfig(ComponentName) != null
-        ? requireNativeComponent<GoogleArCoreViewProps>(ComponentName)
-        : () => {
-              throw new Error(LINKING_ERROR);
-          };
+/**
+ * Inicia a gravação da câmera
+ * @returns Promise<boolean>
+ */
+export const startRecording = async (): Promise<boolean> => {
+    return await GoogleArCore.startRecording();
+}
+/**
+ * Encerra a gravação da câmera
+ * @returns Promise<boolean>
+ */
+export const stopRecording = async (): Promise<boolean> => {
+    return await GoogleArCore.stopRecording();
+}
+/**
+ * Determina o status atual da gravação
+ * @returns Promise<boolean>
+ */
+export const getRecordingStatus = async (): Promise<RecordingStatus> => {
+    return await GoogleArCore.getRecordingStatus();
+}
+const isNullComponent = () => {
+    return UIManager.getViewManagerConfig(ComponentName) != null;
+}
+const renderComponent = () => {
+    return requireNativeComponent<CustomViewProps>(ComponentName);
+}
+const errorComponent = () => {
+    throw new Error(LINKING_ERROR);
+}
+const CustomView = isNullComponent() ? renderComponent() : errorComponent();
 
 const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
     const _onChange = useCallback(
@@ -111,7 +179,19 @@ const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
             DeviceEventEmitter.removeListener('onFailedCapture', _onFailedCapture);
         }
     }, [_onChange, _onFailedCapture]);
-    return <CustomView {...props} style={[{ flex: 1 }, props.style]} />;
+    return (
+        <CustomView
+            {...props}
+            noseObj={props.nose?.obj || undefined}
+            noseObjTexture={props.nose?.texture || undefined}
+            leftEarObj={props.leftEar?.obj || undefined}
+            leftEarObjTexture={props.leftEar?.texture || undefined}
+            rightEarObj={props.rightEar?.obj || undefined}
+            rightEarObjTexture={props.rightEar?.texture || undefined}
+            faceMakeupTexture={props.faceMakeup || undefined}
+            style={[{ flex: 1 }, props.style]}
+        />
+    );
 };
 
 export default GoogleArCoreView;

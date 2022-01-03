@@ -38,5 +38,32 @@ public class GoogleArCoreModule extends ReactContextBaseJavaModule {
       }
     }
 
+    @ReactMethod
+    public void startRecording(Promise promise) {
+      if (viewManager != null) {
+       viewManager.startRecording(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void stopRecording(Promise promise) {
+      if (viewManager != null) {
+       viewManager.stopRecording(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void getRecordingStatus(Promise promise) {
+      if (viewManager != null) {
+       viewManager.getRecordingStatus(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
     public static native boolean capture();
 }

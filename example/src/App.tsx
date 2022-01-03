@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -11,9 +11,15 @@ import GoogleArCoreView, {
     capture as GoogleArCoreCapture,
     OnChangeEvent,
     OnFailedCapture,
+    RecordingStatus,
+    startRecording as GoogleArCoreStartRecording,
+    stopRecording as GoogleArCoreStopRecording,
+    getRecordingStatus as GoogleArCoreStatusRecording,
 } from 'react-native-google-ar-core';
 
 const App = () => {
+    const [recordingStatus, setRecordingStatus]: [RecordingStatus, Dispatch<SetStateAction<any>>] = useState('STOPPED');
+    
     const onPress = async () => {
         const response = await GoogleArCoreCapture();
         if (response === true) {
@@ -22,24 +28,43 @@ const App = () => {
             ToastAndroid.show('Captura Falhou', 1000);
         }
     };
+    const onRecord = async () => {
+        if (recordingStatus === 'STOPPED') {
+            await GoogleArCoreStartRecording();
+        } else {
+            await GoogleArCoreStopRecording();
+        }
+        setRecordingStatus(await GoogleArCoreStatusRecording());
+    }
     const onChange = (event: OnChangeEvent) => {
         console.log('OnChangeEvent', event);
     };
     const onFailedCapture = (event: OnFailedCapture) => {
         console.log('OnFailedCapture', event);
     }
+    const recordLabelStatus = () => {
+        if (['FAILED', 'STOPPED'].includes(recordingStatus)) {
+            return 'GRAVAR';
+        } else {
+            return 'GRAVANDO';
+        }
+    }
     return (
         <GoogleArCoreView
-            showFaceMakeup={true}
-            showLeftEar={false}
-            showNose={false}
-            showRightEar={false}
             onChange={onChange}
+            nose={{
+                obj: "models/nose.obj",
+                texture: "models/nose_fur.png",
+            }}
+            showNose
             imagesDir='/MyApp'
             onFailedCapture={onFailedCapture}>
             <View style={styles.mainContent}>
-                <TouchableOpacity onPress={onPress}>
+                <TouchableOpacity onPress={onPress} style={styles.button}>
                     <Text style={styles.title}>Tirar foto</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onRecord}>
+                    <Text style={styles.title}>{recordLabelStatus()}</Text>
                 </TouchableOpacity>
             </View>
         </GoogleArCoreView>
@@ -53,6 +78,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         alignContent: 'center',
+        flexDirection: 'column',
     },
     title: {
         fontSize: 40,
@@ -73,6 +99,9 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 26,
     },
+    button: {
+        marginBottom: 10,
+    }
 });
 
 export default App;
