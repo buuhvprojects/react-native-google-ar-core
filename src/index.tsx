@@ -141,6 +141,27 @@ export const stopRecording = async (): Promise<boolean> => {
 export const getRecordingStatus = async (): Promise<RecordingStatus> => {
     return await GoogleArCore.getRecordingStatus();
 }
+/**
+ * Pausa o ARCore
+ * @returns Promise<boolean>
+ */
+export const pauseSession = async (): Promise<boolean> => {
+    return await GoogleArCore.pauseSession();
+}
+/**
+ * Continua o ARCore
+ * @returns Promise<boolean>
+ */
+export const resumeSession = async (): Promise<boolean> => {
+    return await GoogleArCore.resumeSession();
+}
+/**
+ * Encerra o ARCore
+ * @returns Promise<boolean>
+ */
+export const stopSession = async (): Promise<boolean> => {
+    return await GoogleArCore.stopSession();
+}
 const isNullComponent = () => {
     return UIManager.getViewManagerConfig(ComponentName) != null;
 }

@@ -80,7 +80,7 @@ public class CameraEffect implements GLSurfaceView.Renderer {
   private String noseObjTexture = "models/nose_fur.png";
   private String leftEarObj = "models/forehead_left.obj";
   private String leftEarObjTexture = "models/ear_fur.png";
-  private String rightEarObj = "models/forehead_left.obj";
+  private String rightEarObj = "models/forehead_right.obj";
   private String rightEarObjTexture = "models/ear_fur.png";
   private String faceMakeupTexture = "models/freckles.png";
 
@@ -89,7 +89,6 @@ public class CameraEffect implements GLSurfaceView.Renderer {
   public CameraEffect(ReactApplicationContext context, GLSurfaceView glSurfaceView) {
     this.reactContext = context;
     this.surfaceView = glSurfaceView;
-    surfaceView.setPreserveEGLContextOnPause(true);
     inflateLayout();
     setupRender();
   }
@@ -183,7 +182,7 @@ public class CameraEffect implements GLSurfaceView.Renderer {
     return response;
   }
 
-  private boolean resumeSession() {
+  public boolean resumeSession() {
     try {
       session.resume();
       return true;
@@ -587,6 +586,18 @@ public class CameraEffect implements GLSurfaceView.Renderer {
         break;
       case IO_ERROR:
         promise.resolve("FAILED");
+    }
+  }
+  public void pauseSession() {
+    if (session != null) {
+      session.pause();
+    }
+  }
+
+  public void stopSession() {
+    if (session != null) {
+      session.close();
+
     }
   }
 }

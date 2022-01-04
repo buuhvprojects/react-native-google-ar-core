@@ -65,5 +65,32 @@ public class GoogleArCoreModule extends ReactContextBaseJavaModule {
       }
     }
 
+    @ReactMethod
+    public void pauseSession(Promise promise) {
+      if (viewManager != null) {
+       viewManager.pauseSession(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void resumeSession(Promise promise) {
+      if (viewManager != null) {
+       viewManager.resumeSession(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void stopSession(Promise promise) {
+      if (viewManager != null) {
+       viewManager.stopSession(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
     public static native boolean capture();
 }

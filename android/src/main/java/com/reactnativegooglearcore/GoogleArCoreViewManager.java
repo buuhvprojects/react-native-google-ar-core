@@ -58,8 +58,7 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
       }
 
       container.bringToFront();
-      start();
-
+      startSession();
       return defaultView;
     }
   }
@@ -73,13 +72,6 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
       case 0:
         container.addView(child);
         break;
-    }
-  }
-
-  protected void start() {
-    if (cameraEffect == null) {
-      cameraEffect = new CameraEffect(reactContext, surfaceView);
-      cameraEffect.start();
     }
   }
 
@@ -199,6 +191,40 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   public void getRecordingStatus(Promise promise) {
     if (cameraEffect != null) {
       cameraEffect.getRecordingStatus(promise);
+    } else {
+      promise.resolve(false);
+    }
+  }
+
+  private void startSession() {
+    if (cameraEffect == null) {
+      cameraEffect = new CameraEffect(reactContext, surfaceView);
+      cameraEffect.start();
+    }
+  }
+
+  public void pauseSession(Promise promise) {
+    if (cameraEffect != null) {
+      cameraEffect.pauseSession();
+      promise.resolve(true);
+    } else {
+      promise.resolve(false);
+    }
+  }
+
+  public void resumeSession(Promise promise) {
+    if (cameraEffect != null) {
+      cameraEffect.resumeSession();
+      promise.resolve(true);
+    } else {
+      promise.resolve(false);
+    }
+  }
+
+  public void stopSession(Promise promise) {
+    if (cameraEffect != null) {
+      cameraEffect.stopSession();
+      cameraEffect = null;
     } else {
       promise.resolve(false);
     }

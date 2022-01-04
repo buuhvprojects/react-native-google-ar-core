@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -15,6 +15,7 @@ import GoogleArCoreView, {
     startRecording as GoogleArCoreStartRecording,
     stopRecording as GoogleArCoreStopRecording,
     getRecordingStatus as GoogleArCoreStatusRecording,
+    stopSession as GoogleArCoreStopSession,
 } from 'react-native-google-ar-core';
 
 const App = () => {
@@ -49,6 +50,14 @@ const App = () => {
             return 'GRAVANDO';
         }
     }
+    const closeSession = async () => {
+        await GoogleArCoreStopSession();
+    }
+    useEffect(() => {
+        return () => {
+            closeSession();
+        }
+    }, []);
     return (
         <GoogleArCoreView
             onChange={onChange}
