@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -11,14 +11,11 @@ import GoogleArCoreView, {
     capture as GoogleArCoreCapture,
     OnChangeEvent,
     OnFailedCapture,
-    RecordingStatus,
-    startRecording as GoogleArCoreStartRecording,
-    stopRecording as GoogleArCoreStopRecording,
-    getRecordingStatus as GoogleArCoreStatusRecording,
 } from 'react-native-google-ar-core';
 
+
 const App = () => {
-    const [recordingStatus, setRecordingStatus]: [RecordingStatus, Dispatch<SetStateAction<any>>] = useState('STOPPED');
+    const [effectIndex, setEffectIndex] = useState(0);
     
     const onPress = async () => {
         const response = await GoogleArCoreCapture();
@@ -28,35 +25,27 @@ const App = () => {
             ToastAndroid.show('Captura Falhou', 1000);
         }
     };
-    const onRecord = async () => {
-        if (recordingStatus === 'STOPPED') {
-            await GoogleArCoreStartRecording();
-        } else {
-            await GoogleArCoreStopRecording();
-        }
-        setRecordingStatus(await GoogleArCoreStatusRecording());
-    }
     const onChange = (event: OnChangeEvent) => {
         console.log('OnChangeEvent', event);
     };
     const onFailedCapture = (event: OnFailedCapture) => {
         console.log('OnFailedCapture', event);
     }
-    const recordLabelStatus = () => {
-        if (['FAILED', 'STOPPED'].includes(recordingStatus)) {
-            return 'GRAVAR';
-        } else {
-            return 'GRAVANDO';
-        }
+    const onChangeEffect = () => {
+        setEffectIndex(effectIndex < 3 ? effectIndex + 1 : 0);
     }
     return (
         <GoogleArCoreView
             onChange={onChange}
             imagesDir='/MyApp'
+            effectIndex={effectIndex}
             onFailedCapture={onFailedCapture}>
             <View style={styles.mainContent}>
                 <TouchableOpacity onPress={onPress} style={styles.button}>
                     <Text style={styles.title}>Tirar foto</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onChangeEffect} style={styles.button}>
+                    <Text style={styles.title}>Alternar</Text>
                 </TouchableOpacity>
             </View>
         </GoogleArCoreView>

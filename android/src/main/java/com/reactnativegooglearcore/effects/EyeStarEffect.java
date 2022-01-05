@@ -10,12 +10,12 @@ import com.reactnativegooglearcore.augmentedfaces.FaceRegion;
 
 import java.util.ArrayList;
 
-public class FoxEffect implements AugmentedFaceInterface {
+public class EyeStarEffect implements AugmentedFaceInterface {
   Context context;
   ArrayList<FaceRegion> landmarks = new ArrayList<>();
   public AugmentedFaceRegions face;
 
-  public FoxEffect(Context context) {
+  public EyeStarEffect(Context context) {
     this.context = context;
   }
 
@@ -24,33 +24,21 @@ public class FoxEffect implements AugmentedFaceInterface {
     landmarks.add(new FaceRegion(context));
     landmarks.get(0)
       .create(
-        "models/nose.obj",
-        "models/nose_fur.png",
-        AugmentedFaceRegions.RegionType.NOSE_TIP
+        "models/star.obj",
+        "models/star_texture.png",
+        AugmentedFaceRegions.RegionType.EYE_LEFT
       );
     landmarks.add(new FaceRegion(context));
     landmarks.get(1)
       .create(
-        "models/forehead_left.obj",
-        "models/ear_fur.png",
-        AugmentedFaceRegions.RegionType.FOREHEAD_LEFT
-      );
-    landmarks.add(new FaceRegion(context));
-    landmarks.get(2)
-      .create(
-        "models/forehead_right.obj",
-        "models/ear_fur.png",
-        AugmentedFaceRegions.RegionType.FOREHEAD_RIGHT
+        "models/star.obj",
+        "models/star_texture.png",
+        AugmentedFaceRegions.RegionType.EYE_RIGHT
       );
   }
 
   @Override
-  public void draw(
-    AugmentedFace face,
-    float[] projectionMatrix,
-    float[] viewMatrix,
-    float[] colorCorrectionRgba
-  ) {
+  public void draw(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] colorCorrectionRgba) {
     GLES20.glDepthMask(false);
 
     for (FaceRegion landmark: landmarks) {

@@ -12,7 +12,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.reactnativegooglearcore.effects.EffectRender;
+import com.reactnativegooglearcore.augmentedfaces.AugmentedEffectRender;
 
 public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout> {
   public static final String REACT_CLASS = "GoogleArCoreView";
@@ -23,7 +23,7 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
 
   private GLSurfaceView surfaceView;
 
-  private EffectRender effectRender;
+  private AugmentedEffectRender augmentedEffectRender;
 
   public GoogleArCoreViewManager(ReactApplicationContext reactContext) {
     this.reactContext = reactContext;
@@ -80,8 +80,8 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
    * @param promise
    */
   public void setRequestedCapture(Promise promise) {
-    if (effectRender != null) {
-      effectRender.capture();
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.capture();
       promise.resolve(true);
     } else {
       promise.resolve(false);
@@ -90,52 +90,52 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
 
   @ReactProp(name = "imagesDir")
   public void setImagesDir(View view, @Nullable String dir) {
-    if (effectRender != null) {
-      effectRender.setDir(dir);
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.setDir(dir);
     }
   }
 
   @ReactProp(name = "effectIndex")
   public void setEffectIndex(View view, @Nullable int value) {
-    if (effectRender != null) {
-      effectRender.setEffectIndex(value);
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.setEffectIndex(value);
     }
   }
 
   public void startRecording(Promise promise) {
-    if (effectRender != null) {
-      effectRender.startRecording(promise);
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.startRecording(promise);
     } else {
       promise.resolve(false);
     }
   }
 
   public void stopRecording(Promise promise) {
-    if (effectRender != null) {
-      effectRender.stopRecording(promise);
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.stopRecording(promise);
     } else {
       promise.resolve(false);
     }
   }
 
   public void getRecordingStatus(Promise promise) {
-    if (effectRender != null) {
-      effectRender.getRecordingStatus(promise);
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.getRecordingStatus(promise);
     } else {
       promise.resolve(false);
     }
   }
 
   private void startSession() {
-    if (effectRender == null) {
-      effectRender = new EffectRender(reactContext, surfaceView);
-      effectRender.start();
+    if (augmentedEffectRender == null) {
+      augmentedEffectRender = new AugmentedEffectRender(reactContext, surfaceView);
+      augmentedEffectRender.start();
     }
   }
 
   public void pauseSession(Promise promise) {
-    if (effectRender != null) {
-      effectRender.pauseSession();
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.pauseSession();
       promise.resolve(true);
     } else {
       promise.resolve(false);
@@ -143,8 +143,8 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   }
 
   public void resumeSession(Promise promise) {
-    if (effectRender != null) {
-      effectRender.resumeSession();
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.resumeSession();
       promise.resolve(true);
     } else {
       promise.resolve(false);
@@ -152,9 +152,9 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   }
 
   public void stopSession(Promise promise) {
-    if (effectRender != null) {
-      effectRender.stopSession();
-      effectRender = null;
+    if (augmentedEffectRender != null) {
+      augmentedEffectRender.stopSession();
+      augmentedEffectRender = null;
     } else {
       promise.resolve(false);
     }

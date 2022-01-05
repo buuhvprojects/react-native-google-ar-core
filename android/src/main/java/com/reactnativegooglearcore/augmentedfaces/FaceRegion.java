@@ -1,4 +1,4 @@
-package com.reactnativegooglearcore.effects;
+package com.reactnativegooglearcore.augmentedfaces;
 
 import android.content.Context;
 import android.util.Log;

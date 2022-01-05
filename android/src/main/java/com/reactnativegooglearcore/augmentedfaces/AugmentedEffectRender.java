@@ -1,4 +1,4 @@
-package com.reactnativegooglearcore.effects;
+package com.reactnativegooglearcore.augmentedfaces;
 
 import android.net.Uri;
 import android.opengl.GLES20;
@@ -23,13 +23,16 @@ import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
-import com.reactnativegooglearcore.augmentedfaces.AugmentedFaceInterface;
 import com.reactnativegooglearcore.common.helpers.CameraPermissionHelper;
 import com.reactnativegooglearcore.common.helpers.DisplayRotationHelper;
 import com.reactnativegooglearcore.common.helpers.SaveBitmap;
 import com.reactnativegooglearcore.common.helpers.SnackbarHelper;
 import com.reactnativegooglearcore.common.helpers.TrackingStateHelper;
 import com.reactnativegooglearcore.common.rendering.BackgroundRenderer;
+import com.reactnativegooglearcore.effects.BeardEffect;
+import com.reactnativegooglearcore.effects.EyeStarEffect;
+import com.reactnativegooglearcore.effects.FoxEffect;
+import com.reactnativegooglearcore.effects.SuperSayajinHairEffect;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +45,8 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class EffectRender implements GLSurfaceView.Renderer {
-  private static final String TAG = EffectRender.class.getSimpleName();
+public class AugmentedEffectRender implements GLSurfaceView.Renderer {
+  private static final String TAG = AugmentedEffectRender.class.getSimpleName();
 
   public GLSurfaceView surfaceView;
 
@@ -68,7 +71,7 @@ public class EffectRender implements GLSurfaceView.Renderer {
   public ArrayList<AugmentedFaceInterface> effects = new ArrayList<>();
   private int effectIndex = 0;
 
-  public EffectRender(ReactApplicationContext context, GLSurfaceView glSurfaceView) {
+  public AugmentedEffectRender(ReactApplicationContext context, GLSurfaceView glSurfaceView) {
     this.reactContext = context;
     this.surfaceView = glSurfaceView;
     inflateLayout();
@@ -87,6 +90,7 @@ public class EffectRender implements GLSurfaceView.Renderer {
   public void setEffectIndex(int effectIndex) {
     int totalIndexes = effects.size() - 1;
     if (totalIndexes >= effectIndex) {
+      isObjChanged = true;
       this.effectIndex = effectIndex;
     }
   }
@@ -202,7 +206,14 @@ public class EffectRender implements GLSurfaceView.Renderer {
 
   private void createEffects() {
     FoxEffect foxEffect = new FoxEffect(reactContext);
+    EyeStarEffect eyeStarEffect = new EyeStarEffect(reactContext);
+    BeardEffect beardEffect = new BeardEffect(reactContext);
+    SuperSayajinHairEffect superSayajinHairEffect = new SuperSayajinHairEffect(reactContext);
+
     effects.add(foxEffect);
+    effects.add(eyeStarEffect);
+    effects.add(beardEffect);
+    effects.add(superSayajinHairEffect);
   }
 
   @Override
