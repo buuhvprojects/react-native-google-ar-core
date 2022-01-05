@@ -15,7 +15,6 @@ import GoogleArCoreView, {
     startRecording as GoogleArCoreStartRecording,
     stopRecording as GoogleArCoreStopRecording,
     getRecordingStatus as GoogleArCoreStatusRecording,
-    stopSession as GoogleArCoreStopSession,
 } from 'react-native-google-ar-core';
 
 const App = () => {
@@ -50,30 +49,14 @@ const App = () => {
             return 'GRAVANDO';
         }
     }
-    const closeSession = async () => {
-        await GoogleArCoreStopSession();
-    }
-    useEffect(() => {
-        return () => {
-            closeSession();
-        }
-    }, []);
     return (
         <GoogleArCoreView
             onChange={onChange}
-            nose={{
-                obj: "models/nose.obj",
-                texture: "models/nose_fur.png",
-            }}
-            showNose
             imagesDir='/MyApp'
             onFailedCapture={onFailedCapture}>
             <View style={styles.mainContent}>
                 <TouchableOpacity onPress={onPress} style={styles.button}>
                     <Text style={styles.title}>Tirar foto</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onRecord}>
-                    <Text style={styles.title}>{recordLabelStatus()}</Text>
                 </TouchableOpacity>
             </View>
         </GoogleArCoreView>

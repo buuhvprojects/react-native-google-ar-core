@@ -12,7 +12,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.reactnativegooglearcore.effects.CameraEffect;
+import com.reactnativegooglearcore.effects.EffectRender;
 
 public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout> {
   public static final String REACT_CLASS = "GoogleArCoreView";
@@ -23,7 +23,7 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
 
   private GLSurfaceView surfaceView;
 
-  private CameraEffect cameraEffect;
+  private EffectRender effectRender;
 
   public GoogleArCoreViewManager(ReactApplicationContext reactContext) {
     this.reactContext = reactContext;
@@ -80,8 +80,8 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
    * @param promise
    */
   public void setRequestedCapture(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.capture();
+    if (effectRender != null) {
+      effectRender.capture();
       promise.resolve(true);
     } else {
       promise.resolve(false);
@@ -90,122 +90,52 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
 
   @ReactProp(name = "imagesDir")
   public void setImagesDir(View view, @Nullable String dir) {
-    if (cameraEffect != null) {
-      cameraEffect.setDir(dir);
+    if (effectRender != null) {
+      effectRender.setDir(dir);
     }
   }
 
-  @ReactProp(name = "showNose")
-  public void setDrawNose(View view, @Nullable boolean value) {
-    if (cameraEffect != null) {
-      cameraEffect.setDrawNose(value);
-    }
-  }
-
-  @ReactProp(name = "showLeftEar")
-  public void setDrawLeftEar(View view, @Nullable boolean value) {
-    if (cameraEffect != null) {
-      cameraEffect.setDrawLeftEar(value);
-    }
-  }
-
-  @ReactProp(name = "showRightEar")
-  public void setDrawRightEar(View view, @Nullable boolean value) {
-    if (cameraEffect != null) {
-      cameraEffect.setDrawRightEar(value);
-    }
-  }
-
-  @ReactProp(name = "showFaceMakeup")
-  public void setDrawFaceMakeup(View view, @Nullable boolean value) {
-    if (cameraEffect != null) {
-      cameraEffect.setDrawFaceMakeup(value);
-    }
-  }
-
-  @ReactProp(name = "noseObj")
-  public void setNoseObj(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setNoseObj(value);
-    }
-  }
-
-  @ReactProp(name = "noseObjTexture")
-  public void setNoseObjTexture(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setNoseObjTexture(value);
-    }
-  }
-
-  @ReactProp(name = "leftEarObj")
-  public void setLeftEarObj(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setLeftEarObj(value);
-    }
-  }
-
-  @ReactProp(name = "leftEarObjTexture")
-  public void setLeftEarObjTexture(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setLeftEarObjTexture(value);
-    }
-  }
-
-  @ReactProp(name = "rightEarObj")
-  public void setRightEarObj(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setRightEarObj(value);
-    }
-  }
-
-  @ReactProp(name = "rightEarObjTexture")
-  public void setRightEarObjTexture(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setRightEarObjTexture(value);
-    }
-  }
-
-  @ReactProp(name = "faceMakeupTexture")
-  public void setFaceMakeupTexture(View view, @Nullable String value) {
-    if (cameraEffect != null) {
-      cameraEffect.setFaceMakeupTexture(value);
+  @ReactProp(name = "effectIndex")
+  public void setEffectIndex(View view, @Nullable int value) {
+    if (effectRender != null) {
+      effectRender.setEffectIndex(value);
     }
   }
 
   public void startRecording(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.startRecording(promise);
+    if (effectRender != null) {
+      effectRender.startRecording(promise);
     } else {
       promise.resolve(false);
     }
   }
 
   public void stopRecording(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.stopRecording(promise);
+    if (effectRender != null) {
+      effectRender.stopRecording(promise);
     } else {
       promise.resolve(false);
     }
   }
 
   public void getRecordingStatus(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.getRecordingStatus(promise);
+    if (effectRender != null) {
+      effectRender.getRecordingStatus(promise);
     } else {
       promise.resolve(false);
     }
   }
 
   private void startSession() {
-    if (cameraEffect == null) {
-      cameraEffect = new CameraEffect(reactContext, surfaceView);
-      cameraEffect.start();
+    if (effectRender == null) {
+      effectRender = new EffectRender(reactContext, surfaceView);
+      effectRender.start();
     }
   }
 
   public void pauseSession(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.pauseSession();
+    if (effectRender != null) {
+      effectRender.pauseSession();
       promise.resolve(true);
     } else {
       promise.resolve(false);
@@ -213,8 +143,8 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   }
 
   public void resumeSession(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.resumeSession();
+    if (effectRender != null) {
+      effectRender.resumeSession();
       promise.resolve(true);
     } else {
       promise.resolve(false);
@@ -222,9 +152,9 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
   }
 
   public void stopSession(Promise promise) {
-    if (cameraEffect != null) {
-      cameraEffect.stopSession();
-      cameraEffect = null;
+    if (effectRender != null) {
+      effectRender.stopSession();
+      effectRender = null;
     } else {
       promise.resolve(false);
     }
