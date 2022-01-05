@@ -1,7 +1,5 @@
 package com.reactnativegooglearcore.augmentedfaces;
 
-import android.util.Log;
-
 import com.google.ar.core.AugmentedFace;
 import com.google.ar.core.Pose;
 
@@ -12,13 +10,50 @@ public class AugmentedFaceRegions {
   }
 
   public enum RegionType {
+    /**
+     * Lado direito da testa
+     */
     FOREHEAD_RIGHT,
+    /**
+     * Lado esquerdo da testa
+     */
     FOREHEAD_LEFT,
+    /**
+     * Centro da testa
+     */
+    FOREHEAD_CENTER,
+    /**
+     * Nariz
+     */
     NOSE_TIP,
+    /**
+     * Olho esquerdo
+     */
     EYE_LEFT,
+    /**
+     * Olho direito
+     */
     EYE_RIGHT,
+    /**
+     * Bigode
+     */
     MUSTACHE,
-    HAIR
+    /**
+     * Cabelos
+     */
+    HAIR,
+    /**
+     * Queixo
+     */
+    CHIN,
+    /**
+     * Bochecha esquerda
+     */
+    CHEEK_LEFT,
+    /**
+     * Bochecha direita
+     */
+    CHEEK_RIGHT
   }
 
   public Pose getRegionPose(AugmentedFaceRegions.RegionType regionType) {
@@ -35,6 +70,14 @@ public class AugmentedFaceRegions {
         return getLandmarkPose(11);
       case HAIR:
         return getLandmarkPose(10);
+      case FOREHEAD_CENTER:
+        return getLandmarkPose(151);
+      case CHIN:
+        return getLandmarkPose(199);
+      case CHEEK_RIGHT:
+        return getLandmarkPose(352);
+      case CHEEK_LEFT:
+        return getLandmarkPose(123);
       default:
         return face.getRegionPose(AugmentedFace.RegionType.NOSE_TIP);
     }
