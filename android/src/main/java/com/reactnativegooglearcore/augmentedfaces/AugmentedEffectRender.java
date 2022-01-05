@@ -32,6 +32,7 @@ import com.reactnativegooglearcore.common.rendering.BackgroundRenderer;
 import com.reactnativegooglearcore.effects.BeardEffect;
 import com.reactnativegooglearcore.effects.EyeStarEffect;
 import com.reactnativegooglearcore.effects.FoxEffect;
+import com.reactnativegooglearcore.effects.SukunaEffect;
 import com.reactnativegooglearcore.effects.SuperSayajinHairEffect;
 
 import java.io.File;
@@ -209,11 +210,13 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     EyeStarEffect eyeStarEffect = new EyeStarEffect(reactContext);
     BeardEffect beardEffect = new BeardEffect(reactContext);
     SuperSayajinHairEffect superSayajinHairEffect = new SuperSayajinHairEffect(reactContext);
+    SukunaEffect sukunaEffect = new SukunaEffect(reactContext);
 
     effects.add(foxEffect);
     effects.add(eyeStarEffect);
     effects.add(beardEffect);
     effects.add(superSayajinHairEffect);
+    effects.add(sukunaEffect);
   }
 
   @Override
@@ -263,9 +266,13 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
       camera.getViewMatrix(viewMatrix, 0);
 
       final float[] colorCorrectionRgba = new float[4];
+      float[] modelMatrix = new float[16];
+
       frame.getLightEstimate().getColorCorrection(colorCorrectionRgba, 0);
       backgroundRenderer.draw(frame);
       trackingStateHelper.updateKeepScreenOnFlag(camera.getTrackingState());
+
+      GLES20.glDepthMask(false);
 
       Collection<AugmentedFace> faces = session.getAllTrackables(AugmentedFace.class);
       for (AugmentedFace face : faces) {
@@ -273,11 +280,13 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
           break;
         }
 
-        GLES20.glDepthMask(false);
-        float[] modelMatrix = new float[16];
         face.getCenterPose().toMatrix(modelMatrix, 0);
+        AugmentedFaceInterface effect = effects.get(effectIndex);
+        if (effect.requireTexture() == true) {
+          effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
+        }
 
-        effects.get(effectIndex).draw(face, projectionMatrix, viewMatrix, colorCorrectionRgba);
+        effect.draw(face, projectionMatrix, viewMatrix, colorCorrectionRgba);
 
       }
       if (requestedCapture && isRecording == false) {

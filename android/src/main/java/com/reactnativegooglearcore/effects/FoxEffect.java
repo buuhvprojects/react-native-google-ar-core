@@ -20,7 +20,13 @@ public class FoxEffect implements AugmentedFaceInterface {
   }
 
   @Override
+  public boolean requireTexture() {
+    return false;
+  }
+
+  @Override
   public void createObjects() {
+    landmarks = new ArrayList<>();
     landmarks.add(new FaceRegion(context));
     landmarks.get(0)
       .create(
@@ -51,8 +57,6 @@ public class FoxEffect implements AugmentedFaceInterface {
     float[] viewMatrix,
     float[] colorCorrectionRgba
   ) {
-    GLES20.glDepthMask(false);
-
     for (FaceRegion landmark: landmarks) {
       landmark.update(
         face,
@@ -61,5 +65,10 @@ public class FoxEffect implements AugmentedFaceInterface {
         colorCorrectionRgba
       );
     }
+  }
+
+  @Override
+  public void drawTexture(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] modelMatrix, float[] colorCorrectionRgba) {
+
   }
 }

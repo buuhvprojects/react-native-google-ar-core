@@ -10,18 +10,13 @@ import com.reactnativegooglearcore.augmentedfaces.FaceRegion;
 
 import java.util.ArrayList;
 
-public class BeardEffect implements AugmentedFaceInterface {
+public class SukunaEffect implements AugmentedFaceInterface {
   Context context;
   ArrayList<FaceRegion> landmarks = new ArrayList<>();
   public AugmentedFaceRegions face;
 
-  public BeardEffect(Context context) {
+  public SukunaEffect(Context context) {
     this.context = context;
-  }
-
-  @Override
-  public boolean requireTexture() {
-    return false;
   }
 
   @Override
@@ -29,11 +24,26 @@ public class BeardEffect implements AugmentedFaceInterface {
     landmarks = new ArrayList<>();
     landmarks.add(new FaceRegion(context));
     landmarks.get(0)
-      .create(
-        "models/beard.obj",
-        "models/beard.png",
-        AugmentedFaceRegions.RegionType.MUSTACHE
+      .createMakeup("models/sukuna_texture.png");
+  }
+
+  @Override
+  public void drawTexture(
+    AugmentedFace face,
+    float[] projectionMatrix,
+    float[] viewMatrix,
+    float[] modelMatrix,
+    float[] colorCorrectionRgba
+  ) {
+    for (FaceRegion landmark: landmarks) {
+      landmark.updateTexture(
+        face,
+        projectionMatrix,
+        viewMatrix,
+        modelMatrix,
+        colorCorrectionRgba
       );
+    }
   }
 
   @Override
@@ -42,19 +52,10 @@ public class BeardEffect implements AugmentedFaceInterface {
     float[] projectionMatrix,
     float[] viewMatrix,
     float[] colorCorrectionRgba
-  ) {
-    for (FaceRegion landmark: landmarks) {
-      landmark.update(
-        face,
-        projectionMatrix,
-        viewMatrix,
-        colorCorrectionRgba
-      );
-    }
-  }
+  ) {}
 
   @Override
-  public void drawTexture(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] modelMatrix, float[] colorCorrectionRgba) {
-
+  public boolean requireTexture() {
+    return true;
   }
 }

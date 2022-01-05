@@ -48,4 +48,9 @@ public class FaceRegion {
     objectRenderer.updateModelMatrix(objectMatrix, scaleFactor);
     objectRenderer.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, DEFAULT_COLOR);
   }
+
+  public void updateTexture(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] modelMatrix, float[] colorCorrectionRgba) {
+    augmentedFaceRenderer.draw(
+      projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba, face);
+  }
 }

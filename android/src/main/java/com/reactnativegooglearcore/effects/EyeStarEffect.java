@@ -20,7 +20,13 @@ public class EyeStarEffect implements AugmentedFaceInterface {
   }
 
   @Override
+  public boolean requireTexture() {
+    return false;
+  }
+
+  @Override
   public void createObjects() {
+    landmarks = new ArrayList<>();
     landmarks.add(new FaceRegion(context));
     landmarks.get(0)
       .create(
@@ -38,9 +44,12 @@ public class EyeStarEffect implements AugmentedFaceInterface {
   }
 
   @Override
-  public void draw(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] colorCorrectionRgba) {
-    GLES20.glDepthMask(false);
-
+  public void draw(
+    AugmentedFace face,
+    float[] projectionMatrix,
+    float[] viewMatrix,
+    float[] colorCorrectionRgba
+  ) {
     for (FaceRegion landmark: landmarks) {
       landmark.update(
         face,
@@ -49,5 +58,10 @@ public class EyeStarEffect implements AugmentedFaceInterface {
         colorCorrectionRgba
       );
     }
+  }
+
+  @Override
+  public void drawTexture(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] modelMatrix, float[] colorCorrectionRgba) {
+
   }
 }

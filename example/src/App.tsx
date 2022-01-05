@@ -32,7 +32,7 @@ const App = () => {
         console.log('OnFailedCapture', event);
     }
     const onChangeEffect = () => {
-        setEffectIndex(effectIndex < 3 ? effectIndex + 1 : 0);
+        setEffectIndex(effectIndex < 4 ? effectIndex + 1 : 0);
     }
     return (
         <GoogleArCoreView
