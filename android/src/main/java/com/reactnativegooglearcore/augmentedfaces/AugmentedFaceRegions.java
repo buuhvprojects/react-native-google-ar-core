@@ -34,7 +34,7 @@ public class AugmentedFaceRegions {
       case MUSTACHE:
         return getLandmarkPose(11);
       case HAIR:
-        return getLandmarkPose(9);
+        return getLandmarkPose(10);
       default:
         return face.getRegionPose(AugmentedFace.RegionType.NOSE_TIP);
     }
