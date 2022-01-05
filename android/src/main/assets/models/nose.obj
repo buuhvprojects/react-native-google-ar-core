@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib nose.mtl
+mtllib NOSE.mtl
 g skinCluster4Set tweakSet4
 v 0.000004 -0.004994 0.020306
 v 0.005503 -0.005386 0.018312
