@@ -73,7 +73,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   private boolean isObjChanged = true;
 
   public Map<String,AugmentedFaceInterface> effects = new HashMap<>();
-  private String effectKey;
+  private String effectKey = "";
 
   public AugmentedEffectRender(ReactApplicationContext context, GLSurfaceView glSurfaceView) {
     this.reactContext = context;
@@ -92,9 +92,9 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     saveBitmap.setDIRECTORY(dir);
   }
   public void setEffect(String effectKey) {
-    isObjChanged = true;
     if (effects.size() > 0 && !effects.containsKey(effectKey)) throw new NullPointerException("Cannot choose a key that not exist on effects");
     this.effectKey = effectKey;
+    isObjChanged = true;
   }
 
   public void setEffects(String jsonString) {
@@ -256,7 +256,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
   @Override
   public void onDrawFrame(GL10 gl) {
-    if (isObjChanged) {
+    if (isObjChanged && !effectKey.isEmpty()) {
       isObjChanged = effects.containsKey(effectKey) ? false : true;
       if (effects.size() > 0 && isObjChanged == false) {
         effects.get(effectKey).createObjects();
@@ -293,8 +293,6 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
       GLES20.glDepthMask(false);
 
-      if (effectKey == null || effects.size() == 0) return;
-
       Collection<AugmentedFace> faces = session.getAllTrackables(AugmentedFace.class);
       for (AugmentedFace face : faces) {
         if (face.getTrackingState() != TrackingState.TRACKING) {
@@ -303,11 +301,13 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
         face.getCenterPose().toMatrix(modelMatrix, 0);
         AugmentedFaceInterface effect = effects.get(effectKey);
-        if (effect.requireTexture() == true) {
-          effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
-        }
+        if (effectKey != null && effects.size() > 0) {
+          if (effect.requireTexture() == true) {
+            effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
+          }
 
-        effect.draw(face, projectionMatrix, viewMatrix, colorCorrectionRgba);
+          effect.draw(face, projectionMatrix, viewMatrix, colorCorrectionRgba);
+        }
 
       }
       if (requestedCapture && isRecording == false) {

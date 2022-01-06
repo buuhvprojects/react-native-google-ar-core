@@ -123,7 +123,7 @@ interface GoogleArCoreViewProps {
     /**
      * Lista com os efeitos
      */
-    effects: EffectData[]
+    effects?: EffectData[]
 };
 export type RecordingStatus = 'STARTED' | 'STOPPED' | 'FAILED';
 
@@ -233,7 +233,7 @@ const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
     return (
         <CustomView
             {...props}
-            effects={JSON.stringify(props.effects)}
+            effects={JSON.stringify(props.effects || "")}
             style={[{ flex: 1 }, props.style]}
         />
     );
