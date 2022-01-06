@@ -1,17 +1,21 @@
 package com.reactnativegooglearcore;
 
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.uimanager.annotations.ReactPropGroup;
 import com.reactnativegooglearcore.augmentedfaces.AugmentedEffectRender;
 
 public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout> {
@@ -95,10 +99,17 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
     }
   }
 
-  @ReactProp(name = "effectIndex")
-  public void setEffectIndex(View view, @Nullable int value) {
+  @ReactProp(name = "effectKey")
+  public void setEffect(View view, @Nullable String value) {
     if (augmentedEffectRender != null) {
-      augmentedEffectRender.setEffectIndex(value);
+      augmentedEffectRender.setEffect(value);
+    }
+  }
+
+  @ReactProp(name = "effects")
+  public void setEffects(View view, @Nullable String effects) {
+    if (augmentedEffectRender != null){
+      augmentedEffectRender.setEffects(effects);
     }
   }
 

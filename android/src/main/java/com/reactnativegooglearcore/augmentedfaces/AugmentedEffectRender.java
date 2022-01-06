@@ -29,18 +29,21 @@ import com.reactnativegooglearcore.common.helpers.SaveBitmap;
 import com.reactnativegooglearcore.common.helpers.SnackbarHelper;
 import com.reactnativegooglearcore.common.helpers.TrackingStateHelper;
 import com.reactnativegooglearcore.common.rendering.BackgroundRenderer;
-import com.reactnativegooglearcore.effects.BeardEffect;
-import com.reactnativegooglearcore.effects.EyeStarEffect;
-import com.reactnativegooglearcore.effects.FoxEffect;
-import com.reactnativegooglearcore.effects.SukunaEffect;
-import com.reactnativegooglearcore.effects.SuperSayajinHairEffect;
+import com.reactnativegooglearcore.effects.CreateEffect;
+import com.reactnativegooglearcore.effects.Object3D;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -69,8 +72,8 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
   private boolean isObjChanged = true;
 
-  public ArrayList<AugmentedFaceInterface> effects = new ArrayList<>();
-  private int effectIndex = 0;
+  public Map<String,AugmentedFaceInterface> effects = new HashMap<>();
+  private String effectKey;
 
   public AugmentedEffectRender(ReactApplicationContext context, GLSurfaceView glSurfaceView) {
     this.reactContext = context;
@@ -88,11 +91,39 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     setCameraEffectDir(dir);
     saveBitmap.setDIRECTORY(dir);
   }
-  public void setEffectIndex(int effectIndex) {
-    int totalIndexes = effects.size() - 1;
-    if (totalIndexes >= effectIndex) {
+  public void setEffect(String effectKey) {
+    isObjChanged = true;
+    this.effectKey = effectKey;
+  }
+
+  public void setEffects(String jsonString) {
+    try {
+      this.effects.clear();
+      JSONArray objArray = new JSONArray(jsonString);
+
+      for (int index = 0; index < objArray.length(); index++) {
+
+        JSONObject jsonObject = objArray.getJSONObject(index);
+        String key = jsonObject.getString("key");
+        JSONArray datas = jsonObject.getJSONArray("effect");
+        ArrayList<Object3D> arrayList = new ArrayList<>();
+
+        for (int index2 = 0; index2 < datas.length(); index2++) {
+          JSONObject data = datas.getJSONObject(index2);
+
+          Object3D object3D = new Object3D();
+          object3D.object = data.getString("object");
+          object3D.texture = data.getString("texture");
+          object3D.regionType = AugmentedFaceRegions.RegionType.valueOf(data.getString("region"));
+
+          arrayList.add(object3D);
+        }
+        CreateEffect createEffect = new CreateEffect(reactContext, arrayList);
+        this.effects.put(key, createEffect);
+      }
       isObjChanged = true;
-      this.effectIndex = effectIndex;
+    } catch (JSONException e) {
+      e.printStackTrace();
     }
   }
 
@@ -205,27 +236,12 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     }
   }
 
-  private void createEffects() {
-    FoxEffect foxEffect = new FoxEffect(reactContext);
-    EyeStarEffect eyeStarEffect = new EyeStarEffect(reactContext);
-    BeardEffect beardEffect = new BeardEffect(reactContext);
-    SuperSayajinHairEffect superSayajinHairEffect = new SuperSayajinHairEffect(reactContext);
-    SukunaEffect sukunaEffect = new SukunaEffect(reactContext);
-
-    effects.add(foxEffect);
-    effects.add(eyeStarEffect);
-    effects.add(beardEffect);
-    effects.add(superSayajinHairEffect);
-    effects.add(sukunaEffect);
-  }
-
   @Override
   public void onSurfaceCreated(GL10 gl, EGLConfig config) {
     GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     try {
       backgroundRenderer.createOnGlThread(reactContext);
-      createEffects();
     } catch (IOException e) {
       Log.e(TAG, "Failed to read an asset file", e);
     }
@@ -240,8 +256,10 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   @Override
   public void onDrawFrame(GL10 gl) {
     if (isObjChanged) {
-      isObjChanged = false;
-      effects.get(effectIndex).createObjects();
+      isObjChanged = effects.containsKey(effectKey) ? false : true;
+      if (effects.size() > 0 && isObjChanged == false) {
+        effects.get(effectKey).createObjects();
+      }
       return;
     }
 
@@ -274,6 +292,8 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
       GLES20.glDepthMask(false);
 
+      if (effectKey == null || effects.size() == 0) return;
+
       Collection<AugmentedFace> faces = session.getAllTrackables(AugmentedFace.class);
       for (AugmentedFace face : faces) {
         if (face.getTrackingState() != TrackingState.TRACKING) {
@@ -281,7 +301,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
         }
 
         face.getCenterPose().toMatrix(modelMatrix, 0);
-        AugmentedFaceInterface effect = effects.get(effectIndex);
+        AugmentedFaceInterface effect = effects.get(effectKey);
         if (effect.requireTexture() == true) {
           effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
         }

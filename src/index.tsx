@@ -23,6 +23,70 @@ export type OnChangeEvent = {
 export type OnFailedCapture = {
     [key: string]: string | number;
 };
+type EffectRegionType = 
+/**
+ * Lado direito da testa
+ */
+"FOREHEAD_RIGHT" 
+| 
+/**
+ * Lado esquerdo da testa
+ */
+'FOREHEAD_LEFT' 
+| 
+/**
+ * Centro da testa
+ */
+'FOREHEAD_CENTER' 
+| 
+/**
+ * Nariz
+ */
+'NOSE_TIP' 
+| 
+/**
+ * Olho esquerdo
+ */
+'EYE_LEFT' 
+| 
+/**
+ * Olho direito
+ */
+'EYE_RIGHT'
+| 
+/**
+ * Bigode
+ */
+'MUSTACHE'
+| 
+/**
+ * Cabelo
+ */
+'HAIR'
+| 
+/**
+ * Queixo
+ */
+'CHIN'
+| 
+/**
+ * Bochecha esquerda
+ */
+'CHEEK_LEFT'
+| 
+/**
+ * Bochecha direita
+ */
+'CHEEK_RIGHT';
+export type EffectStruct = {
+    object: string;
+    texture: string;
+    region: EffectRegionType;
+}
+export type EffectData = {
+    key: string;
+    effect: EffectStruct[]
+}
 
 interface GoogleArCoreViewProps {
     children?: Element[] | Element;
@@ -45,7 +109,11 @@ interface GoogleArCoreViewProps {
     /**
      * Efeito a ser aplicada
      */
-    effectIndex?: number;
+    effectKey?: string;
+    /**
+     * Lista com os efeitos
+     */
+    effects: EffectData[]
 };
 export type RecordingStatus = 'STARTED' | 'STOPPED' | 'FAILED';
 
@@ -111,11 +179,14 @@ export const resumeSession = async (): Promise<boolean> => {
 export const stopSession = async (): Promise<boolean> => {
     return await GoogleArCore.stopSession();
 }
+interface CustomViewProps extends Omit<GoogleArCoreViewProps, 'effects'> {
+    effects: string;
+}
 const isNullComponent = () => {
     return UIManager.getViewManagerConfig(ComponentName) != null;
 }
 const renderComponent = () => {
-    return requireNativeComponent<GoogleArCoreViewProps>(ComponentName);
+    return requireNativeComponent<CustomViewProps>(ComponentName);
 }
 const errorComponent = () => {
     throw new Error(LINKING_ERROR);
@@ -152,6 +223,7 @@ const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
     return (
         <CustomView
             {...props}
+            effects={JSON.stringify(props.effects)}
             style={[{ flex: 1 }, props.style]}
         />
     );
