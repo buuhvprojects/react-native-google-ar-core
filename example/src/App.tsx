@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -11,11 +11,34 @@ import GoogleArCoreView, {
     capture as GoogleArCoreCapture,
     OnChangeEvent,
     OnFailedCapture,
+    EffectData,
 } from 'react-native-google-ar-core';
 
-
 const App = () => {
-    const [effectIndex, setEffectIndex] = useState(0);
+    const [effectKey, setEffectKey] = useState("fox");
+    const effects = useMemo(() => {
+        const data: EffectData[] = [{
+            key: 'fox',
+            effect: [
+                {
+                    object: 'models/nose.obj',
+                    texture: 'models/nose_fur.png',
+                    region: 'NOSE_TIP'
+                },
+                {
+                    object: 'models/forehead_left.obj',
+                    texture: 'models/ear_fur.png',
+                    region: 'FOREHEAD_LEFT'
+                },
+                {
+                    object: 'models/forehead_right.obj',
+                    texture: 'models/ear_fur.png',
+                    region: 'FOREHEAD_RIGHT'
+                }
+            ]
+        }];
+        return data;
+    }, []);
     
     const onPress = async () => {
         const response = await GoogleArCoreCapture();
@@ -32,13 +55,14 @@ const App = () => {
         console.log('OnFailedCapture', event);
     }
     const onChangeEffect = () => {
-        setEffectIndex(effectIndex < 4 ? effectIndex + 1 : 0);
+        setEffectKey("kakashi");
     }
     return (
         <GoogleArCoreView
             onChange={onChange}
             imagesDir='/MyApp'
-            effectIndex={effectIndex}
+            effects={effects}
+            effectKey={effectKey}
             onFailedCapture={onFailedCapture}>
             <View style={styles.mainContent}>
                 <TouchableOpacity onPress={onPress} style={styles.button}>
@@ -57,7 +81,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         alignContent: 'center',
         flexDirection: 'column',
     },
