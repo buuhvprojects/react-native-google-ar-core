@@ -92,9 +92,11 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     saveBitmap.setDIRECTORY(dir);
   }
   public void setEffect(String effectKey) {
-    if (effects.size() > 0 && !effects.containsKey(effectKey)) throw new NullPointerException("Cannot choose a key that not exist on effects");
+    if (!effectKey.isEmpty()) {
+      if (effects.size() > 0 && !effects.containsKey(effectKey)) throw new NullPointerException("Cannot choose a key that not exist on effects");
+      isObjChanged = true;
+    }
     this.effectKey = effectKey;
-    isObjChanged = true;
   }
 
   public void setEffects(String jsonString) {
@@ -301,7 +303,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
         face.getCenterPose().toMatrix(modelMatrix, 0);
         AugmentedFaceInterface effect = effects.get(effectKey);
-        if (effectKey != null && effects.size() > 0) {
+        if (!effectKey.isEmpty() && effects.size() > 0) {
           if (effect.requireTexture() == true) {
             effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
           }
