@@ -21,10 +21,12 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-import de.javagl.obj.Obj;
-import de.javagl.obj.ObjData;
-import de.javagl.obj.ObjReader;
-import de.javagl.obj.ObjUtils;
+
+import androidx.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -34,6 +36,11 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Map;
 import java.util.TreeMap;
+
+import de.javagl.obj.Obj;
+import de.javagl.obj.ObjData;
+import de.javagl.obj.ObjReader;
+import de.javagl.obj.ObjUtils;
 
 /** Renders an object loaded from an OBJ file in OpenGL. */
 public class ObjectRenderer {
@@ -126,6 +133,18 @@ public class ObjectRenderer {
   private float[] uvTransform = null;
   private int depthTextureId;
 
+  @NonNull
+  private InputStream readFile(String filePath, Context context) throws FileNotFoundException {
+    String DIRECTORY = context.getExternalFilesDir(null).getAbsolutePath();
+    File file = new File(DIRECTORY + "/" + filePath);
+    try {
+      if (!file.exists()) throw new Exception("File To Render not found");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    InputStream inputStream = new FileInputStream(file);
+    return inputStream;
+  }
   /**
    * Creates and initializes OpenGL resources needed for rendering the model.
    *
@@ -140,7 +159,7 @@ public class ObjectRenderer {
 
     // Read the texture.
     Bitmap textureBitmap =
-        BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
+        BitmapFactory.decodeStream(readFile(diffuseTextureAssetName, context));
 
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
     GLES20.glGenTextures(textures.length, textures, 0);
@@ -158,8 +177,13 @@ public class ObjectRenderer {
     ShaderUtil.checkGLError(TAG, "Texture loading");
 
     // Read the obj file.
-    InputStream objInputStream = context.getAssets().open(objAssetName);
-    Obj obj = ObjReader.read(objInputStream);
+    InputStream objStream = null;
+    try {
+      objStream = readFile(objAssetName, context);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    Obj obj = ObjReader.read(objStream);
 
     // Prepare the Obj so that its structure is suitable for
     // rendering with OpenGL:

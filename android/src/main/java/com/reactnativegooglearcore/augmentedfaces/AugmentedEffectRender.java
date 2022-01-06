@@ -93,6 +93,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   }
   public void setEffect(String effectKey) {
     isObjChanged = true;
+    if (effects.size() > 0 && !effects.containsKey(effectKey)) throw new NullPointerException("Cannot choose a key that not exist on effects");
     this.effectKey = effectKey;
   }
 
