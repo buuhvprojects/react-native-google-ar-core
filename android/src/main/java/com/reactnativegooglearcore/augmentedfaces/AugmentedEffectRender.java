@@ -302,8 +302,8 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
         }
 
         face.getCenterPose().toMatrix(modelMatrix, 0);
-        AugmentedFaceInterface effect = effects.get(effectKey);
         if (!effectKey.isEmpty() && effects.size() > 0) {
+          AugmentedFaceInterface effect = effects.get(effectKey);
           if (effect.requireTexture() == true) {
             effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
           }

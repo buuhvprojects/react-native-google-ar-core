@@ -22,10 +22,17 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+
+import androidx.annotation.NonNull;
+
 import com.google.ar.core.AugmentedFace;
 import com.reactnativegooglearcore.common.rendering.ShaderUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -97,10 +104,21 @@ public class AugmentedFaceRenderer {
     GLES20.glGenTextures(1, textureId, 0);
     loadTexture(context, textureId, diffuseTextureAssetName);
   }
-
+  @NonNull
+  private static InputStream readFile(String filePath, Context context) throws FileNotFoundException {
+    String DIRECTORY = context.getExternalFilesDir(null).getAbsolutePath();
+    File file = new File(DIRECTORY + "/" + filePath);
+    try {
+      if (!file.exists()) throw new Exception("File To Render not found");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    InputStream inputStream = new FileInputStream(file);
+    return inputStream;
+  }
   private static void loadTexture(Context context, int[] textureId, String filename)
       throws IOException {
-    Bitmap textureBitmap = BitmapFactory.decodeStream(context.getAssets().open(filename));
+    Bitmap textureBitmap = BitmapFactory.decodeStream(readFile(filename, context));
     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0]);
     GLES20.glTexParameteri(
         GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);

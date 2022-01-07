@@ -15,30 +15,34 @@ import GoogleArCoreView, {
 } from 'react-native-google-ar-core';
 
 const App = () => {
-    const [effectKey, setEffectKey] = useState("fox");
+    const [effectKey, setEffectKey] = useState('sukuna');
+    const [isReady] = useState(true);
     const effects = useMemo(() => {
-        const data: EffectData[] = [{
-            key: 'fox',
-            effect: [
-                {
-                    object: 'models/nose.obj',
-                    texture: 'models/nose_fur.png',
-                    region: 'NOSE_TIP'
-                },
-                {
-                    object: 'models/forehead_left.obj',
-                    texture: 'models/ear_fur.png',
-                    region: 'FOREHEAD_LEFT'
-                },
-                {
-                    object: 'models/forehead_right.obj',
-                    texture: 'models/ear_fur.png',
-                    region: 'FOREHEAD_RIGHT'
-                }
-            ]
-        }];
+        if (!isReady) return [];
+        const data: EffectData[] = [
+            {
+                key: 'sukuna',
+                effect: [
+                    {
+                        object: '',
+                        texture: 'models/sukuna_texture.png',
+                        region: 'NOSE_TIP',
+                    },
+                ],
+            },
+            {
+                key: 'hellokity',
+                effect: [
+                    {
+                        object: '',
+                        texture: 'models/hellokity_texture.png',
+                        region: 'NOSE_TIP',
+                    },
+                ],
+            },
+        ];
         return data;
-    }, []);
+    }, [isReady]);
     
     const onPress = async () => {
         const response = await GoogleArCoreCapture();
@@ -55,7 +59,7 @@ const App = () => {
         console.log('OnFailedCapture', event);
     }
     const onChangeEffect = () => {
-        setEffectKey("kakashi");
+        setEffectKey(effectKey === 'sukuna' ? 'hellokity' : 'sukuna');
     }
     return (
         <GoogleArCoreView
