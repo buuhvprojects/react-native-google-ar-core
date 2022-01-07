@@ -216,7 +216,9 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
   public boolean resumeSession() {
     try {
-      session.resume();
+      if (session != null) {
+        session.resume();
+      }
       return true;
     } catch (CameraNotAvailableException e) {
       messageSnackbarHelper.showError(reactContext.getCurrentActivity(), "Camera not available. Try restarting the app.");
