@@ -18,6 +18,7 @@ public interface AugmentedFaceInterface {
 
   boolean requireTexture();
   void createObjects();
+  void cleanObjects();
   void draw(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] colorCorrectionRgba);
   void drawTexture(AugmentedFace face, float[] projectionMatrix, float[] viewMatrix, float[] modelMatrix, float[] colorCorrectionRgba);
 }

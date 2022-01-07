@@ -91,7 +91,15 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     setCameraEffectDir(dir);
     saveBitmap.setDIRECTORY(dir);
   }
+  private void cleanObjects() {
+    if (effects.size() > 0) {
+      effects.forEach((s, effect) -> {
+        effect.cleanObjects();
+      });
+    }
+  }
   public void setEffect(String effectKey) {
+    cleanObjects();
     if (!effectKey.isEmpty()) {
       if (effects.size() > 0 && !effects.containsKey(effectKey)) throw new NullPointerException("Cannot choose a key that not exist on effects");
       isObjChanged = true;
@@ -293,7 +301,10 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
       backgroundRenderer.draw(frame);
       trackingStateHelper.updateKeepScreenOnFlag(camera.getTrackingState());
 
+      if (effectKey.isEmpty() || effects.size() == 0) return;
+
       GLES20.glDepthMask(false);
+
 
       Collection<AugmentedFace> faces = session.getAllTrackables(AugmentedFace.class);
       for (AugmentedFace face : faces) {
@@ -302,15 +313,13 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
         }
 
         face.getCenterPose().toMatrix(modelMatrix, 0);
-        if (!effectKey.isEmpty() && effects.size() > 0) {
-          AugmentedFaceInterface effect = effects.get(effectKey);
-          if (effect.requireTexture() == true) {
-            effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
-          }
 
-          effect.draw(face, projectionMatrix, viewMatrix, colorCorrectionRgba);
+        AugmentedFaceInterface effect = effects.get(effectKey);
+        if (effect.requireTexture() == true) {
+          effect.drawTexture(face, projectionMatrix, viewMatrix, modelMatrix, colorCorrectionRgba);
         }
 
+        effect.draw(face, projectionMatrix, viewMatrix, colorCorrectionRgba);
       }
       if (requestedCapture && isRecording == false) {
         requestedCapture = false;

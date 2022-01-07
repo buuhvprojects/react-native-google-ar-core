@@ -28,8 +28,14 @@ public class CreateEffect implements AugmentedFaceInterface {
   }
 
   @Override
-  public void createObjects() {
+  public void cleanObjects() {
     landmarks = new ArrayList<>();
+    landmarksTexture = new ArrayList<>();
+  }
+
+  @Override
+  public void createObjects() {
+    cleanObjects();
     int i = 0;
     for (Object3D object3D: object3Ds) {
       if (!object3D.object.isEmpty()) {

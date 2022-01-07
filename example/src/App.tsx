@@ -15,7 +15,7 @@ import GoogleArCoreView, {
 } from 'react-native-google-ar-core';
 
 const App = () => {
-    const [effectKey, setEffectKey] = useState('sukuna');
+    const [effectKey, setEffectKey] = useState('');
     const [isReady] = useState(true);
     const effects = useMemo(() => {
         if (!isReady) return [];
