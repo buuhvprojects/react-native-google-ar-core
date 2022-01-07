@@ -1,6 +1,6 @@
 {
   "name": "react-native-google-ar-core",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "The Augmented Faces API lets you render assets on top of human faces without using specialized hardware. It offers feature points that allow your app to automatically identify different regions of a detected face. Your app can then use these regions to overlay assets in a way that matches the contours of an individual face.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
