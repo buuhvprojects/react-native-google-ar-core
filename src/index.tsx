@@ -77,8 +77,12 @@ type EffectRegionType =
 /**
  * Bochecha direita
  */
-'CHEEK_RIGHT';
-
+'CHEEK_RIGHT'
+|
+/**
+ * Entre os olhos
+ */
+'EYES_BETWEEN';
 /**
  * As texturas e objetos usados, devem ser adicionados na pasta files da sua aplicação. Para poder visualizar a pasta, abra ela no seu computador seguindo o endereço: Android/data/YOUR-APP/files/[cole aqui os dados]
  */

@@ -35,6 +35,10 @@ public class AugmentedFaceRegions {
      */
     EYE_RIGHT,
     /**
+     * Entre os olhos
+     */
+    EYES_BETWEEN,
+    /**
      * Bigode
      */
     MUSTACHE,
@@ -78,6 +82,8 @@ public class AugmentedFaceRegions {
         return getLandmarkPose(352);
       case CHEEK_LEFT:
         return getLandmarkPose(123);
+      case EYES_BETWEEN:
+        return getLandmarkPose(6);
       default:
         return face.getRegionPose(AugmentedFace.RegionType.NOSE_TIP);
     }
