@@ -286,6 +286,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
   @Override
   public void onDrawFrame(GL10 gl) {
+    if (sessionStatus === "STOPPED") return;
     KeyguardManager myKM = (KeyguardManager) reactContext.getSystemService(Context.KEYGUARD_SERVICE);
     if( !myKM.inKeyguardRestrictedInputMode() && session != null && sessionStatus == "PAUSED") {
       sessionStatus = "RESUMED";
@@ -438,6 +439,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
   public void stopSession() {
     if (session != null) {
+      sessionStatus = "STOPPED";
       session.close();
 
     }
