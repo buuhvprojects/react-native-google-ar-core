@@ -1,6 +1,7 @@
 package com.reactnativegooglearcore.effects;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.ar.core.AugmentedFace;
 import com.reactnativegooglearcore.augmentedfaces.AugmentedFaceInterface;
@@ -36,11 +37,10 @@ public class CreateEffect implements AugmentedFaceInterface {
   @Override
   public void createObjects() {
     cleanObjects();
-    int i = 0;
     for (Object3D object3D: object3Ds) {
       if (!object3D.object.isEmpty()) {
         landmarks.add(new FaceRegion(context));
-        landmarks.get(i)
+        landmarks.get(landmarks.size() - 1)
           .create(
             object3D.object,
             object3D.texture,
@@ -48,10 +48,9 @@ public class CreateEffect implements AugmentedFaceInterface {
           );
       } else {
         landmarksTexture.add(new FaceRegion(context));
-        landmarksTexture.get(i)
+        landmarksTexture.get(landmarksTexture.size() - 1)
           .createMakeup(object3D.texture);
       }
-      i++;
     }
   }
 

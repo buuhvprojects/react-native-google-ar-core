@@ -1,10 +1,14 @@
 package com.reactnativegooglearcore.augmentedfaces;
 
+import android.app.KeyguardManager;
+import android.content.Context;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
 import android.util.Log;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -23,6 +27,7 @@ import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
+import com.reactnativegooglearcore.R;
 import com.reactnativegooglearcore.common.helpers.CameraPermissionHelper;
 import com.reactnativegooglearcore.common.helpers.DisplayRotationHelper;
 import com.reactnativegooglearcore.common.helpers.SaveBitmap;
@@ -55,6 +60,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   public GLSurfaceView surfaceView;
 
   private Session session;
+  private String sessionStatus = "RESUMED";
   public final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
   public DisplayRotationHelper displayRotationHelper;
   public TrackingStateHelper trackingStateHelper;
@@ -217,6 +223,18 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   public boolean resumeSession() {
     try {
       if (session != null) {
+        if (surfaceView == null) {
+          CoordinatorLayout coordinatorLayout = reactContext
+            .getCurrentActivity().findViewById(R.id.containerSurfaceview);
+
+          if (coordinatorLayout == null) {
+            throw new NullPointerException("view.containerSurfaceview");
+          }
+          this.surfaceView = coordinatorLayout.findViewById(R.id.surfaceview);
+          if (surfaceView == null) {
+            throw new NullPointerException("Surfaceview Cannot Be A null Point");
+          }
+        }
         session.resume();
       }
       return true;
@@ -268,6 +286,13 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
   @Override
   public void onDrawFrame(GL10 gl) {
+    KeyguardManager myKM = (KeyguardManager) reactContext.getSystemService(Context.KEYGUARD_SERVICE);
+    if( !myKM.inKeyguardRestrictedInputMode() && session != null && sessionStatus == "PAUSED") {
+      sessionStatus = "RESUMED";
+      resumeSession();
+    } else if (sessionStatus == "RESUMED" && myKM.inKeyguardRestrictedInputMode() && session != null) {
+      sessionStatus = "PAUSED";
+    }
     if (isObjChanged && !effectKey.isEmpty()) {
       isObjChanged = effects.containsKey(effectKey) ? false : true;
       if (effects.size() > 0 && isObjChanged == false) {
@@ -406,6 +431,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   }
   public void pauseSession() {
     if (session != null) {
+      sessionStatus = "PAUSED";
       session.pause();
     }
   }
