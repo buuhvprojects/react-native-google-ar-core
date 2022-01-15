@@ -1,7 +1,5 @@
 package com.reactnativegooglearcore;
 
-import android.app.Activity;
-
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
@@ -13,11 +11,16 @@ import com.facebook.react.module.annotations.ReactModule;
 @ReactModule(name = GoogleArCoreModule.NAME)
 public class GoogleArCoreModule extends ReactContextBaseJavaModule {
     public static final String NAME = "GoogleArCore";
-    public ReactApplicationContext context;
 
-    public GoogleArCoreModule(ReactApplicationContext reactContext) {
+    public ReactApplicationContext context;
+    private GoogleArCoreViewManager viewManager;
+
+    public GoogleArCoreModule(ReactApplicationContext reactContext, GoogleArCoreViewManager viewInstance) {
       super(reactContext);
       context = reactContext;
+      if (viewInstance != null) {
+        viewManager = viewInstance;
+      }
     }
 
     @Override
@@ -27,15 +30,67 @@ public class GoogleArCoreModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void createSession(Promise promise) {
-        promise.resolve(true);
+    public void capture(Promise promise) {
+      if (viewManager != null) {
+       viewManager.setRequestedCapture(promise);
+      } else {
+        promise.resolve(false);
+      }
     }
 
     @ReactMethod
-    public void trackAugmentedFaces(Promise promise) {
-      promise.resolve(true);
+    public void startRecording(Promise promise) {
+      if (viewManager != null) {
+       viewManager.startRecording(promise);
+      } else {
+        promise.resolve(false);
+      }
     }
 
-    public static native boolean createSession();
-    public static native boolean trackAugmentedFaces();
+    @ReactMethod
+    public void stopRecording(Promise promise) {
+      if (viewManager != null) {
+       viewManager.stopRecording(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void getRecordingStatus(Promise promise) {
+      if (viewManager != null) {
+       viewManager.getRecordingStatus(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void pauseSession(Promise promise) {
+      if (viewManager != null) {
+       viewManager.pauseSession(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void resumeSession(Promise promise) {
+      if (viewManager != null) {
+       viewManager.resumeSession(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    @ReactMethod
+    public void stopSession(Promise promise) {
+      if (viewManager != null) {
+       viewManager.stopSession(promise);
+      } else {
+        promise.resolve(false);
+      }
+    }
+
+    public static native boolean capture();
 }
