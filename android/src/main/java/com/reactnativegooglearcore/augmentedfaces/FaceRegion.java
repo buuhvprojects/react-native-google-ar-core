@@ -18,15 +18,18 @@ public class FaceRegion {
   float scaleFactor = 1.0f;
   public static final float[] DEFAULT_COLOR = new float[] {0f, 0f, 0f, 0f};
   public AugmentedFaceRegions.RegionType regionType;
+  public boolean devMode;
 
-  public FaceRegion(Context context) {
+  public FaceRegion(Context context, boolean devMode) {
     this.context = context;
+    this.devMode = devMode;
+    this.objectRenderer.devMode = devMode;
   }
 
   public void create(String object3d, String objectTexture, AugmentedFaceRegions.RegionType regionType) {
     try {
       this.regionType = regionType;
-      objectRenderer.createOnGlThread(context, object3d, objectTexture);
+      objectRenderer.createOnGlThread(context, object3d, objectTexture, this.devMode);
       objectRenderer.setMaterialProperties(0.0f, 1.0f, 0.1f, 6.0f);
       objectRenderer.setBlendMode(ObjectRenderer.BlendMode.AlphaBlending);
     } catch (IOException e) {
@@ -35,7 +38,7 @@ public class FaceRegion {
   }
   public void createMakeup(String texture) {
     try {
-      augmentedFaceRenderer.createOnGlThread(context, texture);
+      augmentedFaceRenderer.createOnGlThread(context, texture, this.devMode);
       augmentedFaceRenderer.setMaterialProperties(0.0f, 1.0f, 0.1f, 6.0f);
     } catch (IOException e) {
       e.printStackTrace();

@@ -45,6 +45,7 @@ import de.javagl.obj.ObjUtils;
 /** Renders an object loaded from an OBJ file in OpenGL. */
 public class ObjectRenderer {
   private static final String TAG = ObjectRenderer.class.getSimpleName();
+  public boolean devMode = false;
 
   /**
    * Blend mode.
@@ -134,8 +135,11 @@ public class ObjectRenderer {
   private int depthTextureId;
 
   @NonNull
-  private InputStream readFile(String filePath, Context context) throws FileNotFoundException {
-    String DIRECTORY = context.getExternalFilesDir(null).getAbsolutePath();
+  private InputStream readFile(String filePath, Context context, boolean devMode) throws FileNotFoundException {
+
+    String DIRECTORY =
+      devMode == true ? context.getAssets().toString()
+        : context.getExternalFilesDir(null).getAbsolutePath();
     File file = new File(DIRECTORY + "/" + filePath);
     try {
       if (!file.exists()) throw new Exception("File To Render not found");
@@ -151,15 +155,16 @@ public class ObjectRenderer {
    * @param context Context for loading the shader and below-named model and texture assets.
    * @param objAssetName Name of the OBJ file containing the model geometry.
    * @param diffuseTextureAssetName Name of the PNG file containing the diffuse texture map.
+   * @param devMode read files from assets folder
    */
-  public void createOnGlThread(Context context, String objAssetName, String diffuseTextureAssetName)
+  public void createOnGlThread(Context context, String objAssetName, String diffuseTextureAssetName, boolean devMode)
       throws IOException {
     // Compiles and loads the shader based on the current configuration.
     compileAndLoadShaderProgram(context);
 
     // Read the texture.
     Bitmap textureBitmap =
-        BitmapFactory.decodeStream(readFile(diffuseTextureAssetName, context));
+        BitmapFactory.decodeStream(readFile(diffuseTextureAssetName, context, devMode));
 
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
     GLES20.glGenTextures(textures.length, textures, 0);
@@ -179,96 +184,11 @@ public class ObjectRenderer {
     // Read the obj file.
     InputStream objStream = null;
     try {
-      objStream = readFile(objAssetName, context);
+      objStream = readFile(objAssetName, context, devMode);
     } catch (Exception e) {
       e.printStackTrace();
     }
     Obj obj = ObjReader.read(objStream);
-
-    // Prepare the Obj so that its structure is suitable for
-    // rendering with OpenGL:
-    // 1. Triangulate it
-    // 2. Make sure that texture coordinates are not ambiguous
-    // 3. Make sure that normals are not ambiguous
-    // 4. Convert it to single-indexed data
-    obj = ObjUtils.convertToRenderable(obj);
-
-    // OpenGL does not use Java arrays. ByteBuffers are used instead to provide data in a format
-    // that OpenGL understands.
-
-    // Obtain the data from the OBJ, as direct buffers:
-    IntBuffer wideIndices = ObjData.getFaceVertexIndices(obj, 3);
-    FloatBuffer vertices = ObjData.getVertices(obj);
-    FloatBuffer texCoords = ObjData.getTexCoords(obj, 2);
-    FloatBuffer normals = ObjData.getNormals(obj);
-
-    // Convert int indices to shorts for GL ES 2.0 compatibility
-    ShortBuffer indices =
-        ByteBuffer.allocateDirect(2 * wideIndices.limit())
-            .order(ByteOrder.nativeOrder())
-            .asShortBuffer();
-    while (wideIndices.hasRemaining()) {
-      indices.put((short) wideIndices.get());
-    }
-    indices.rewind();
-
-    int[] buffers = new int[2];
-    GLES20.glGenBuffers(2, buffers, 0);
-    vertexBufferId = buffers[0];
-    indexBufferId = buffers[1];
-
-    // Load vertex buffer
-    verticesBaseAddress = 0;
-    texCoordsBaseAddress = verticesBaseAddress + 4 * vertices.limit();
-    normalsBaseAddress = texCoordsBaseAddress + 4 * texCoords.limit();
-    final int totalBytes = normalsBaseAddress + 4 * normals.limit();
-
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBufferId);
-    GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, totalBytes, null, GLES20.GL_STATIC_DRAW);
-    GLES20.glBufferSubData(
-        GLES20.GL_ARRAY_BUFFER, verticesBaseAddress, 4 * vertices.limit(), vertices);
-    GLES20.glBufferSubData(
-        GLES20.GL_ARRAY_BUFFER, texCoordsBaseAddress, 4 * texCoords.limit(), texCoords);
-    GLES20.glBufferSubData(
-        GLES20.GL_ARRAY_BUFFER, normalsBaseAddress, 4 * normals.limit(), normals);
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-
-    // Load index buffer
-    GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-    indexCount = indices.limit();
-    GLES20.glBufferData(
-        GLES20.GL_ELEMENT_ARRAY_BUFFER, 2 * indexCount, indices, GLES20.GL_STATIC_DRAW);
-    GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    ShaderUtil.checkGLError(TAG, "OBJ buffer load");
-
-    Matrix.setIdentityM(modelMatrix, 0);
-  }
-
-  public void updateOnGlThread(Context context, String objAssetName, String diffuseTextureAssetName)
-      throws IOException {
-    // Read the texture.
-    Bitmap textureBitmap =
-        BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
-
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-    GLES20.glGenTextures(textures.length, textures, 0);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-
-    GLES20.glTexParameteri(
-        GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
-    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, textureBitmap, 0);
-    GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-
-    textureBitmap.recycle();
-
-    ShaderUtil.checkGLError(TAG, "Texture loading");
-
-    // Read the obj file.
-    InputStream objInputStream = context.getAssets().open(objAssetName);
-    Obj obj = ObjReader.read(objInputStream);
 
     // Prepare the Obj so that its structure is suitable for
     // rendering with OpenGL:
@@ -337,30 +257,6 @@ public class ObjectRenderer {
    */
   public void setBlendMode(BlendMode blendMode) {
     this.blendMode = blendMode;
-  }
-
-  /**
-   * Specifies whether to use the depth texture to perform depth-based occlusion of virtual objects
-   * from real-world geometry.
-   *
-   * <p>This function is a no-op if the value provided is the same as what is already set. If the
-   * value changes, this function will recompile and reload the shader program to either
-   * enable/disable depth-based occlusion. NOTE: recompilation of the shader is inefficient. This
-   * code could be optimized to precompile both versions of the shader.
-   *
-   * @param context Context for loading the shader.
-   * @param useDepthForOcclusion Specifies whether to use the depth texture to perform occlusion
-   *     during rendering of virtual objects.
-   */
-  public void setUseDepthForOcclusion(Context context, boolean useDepthForOcclusion)
-      throws IOException {
-    if (this.useDepthForOcclusion == useDepthForOcclusion) {
-      return; // No change, does nothing.
-    }
-
-    // Toggles the occlusion rendering mode and recompiles the shader.
-    this.useDepthForOcclusion = useDepthForOcclusion;
-    compileAndLoadShaderProgram(context);
   }
 
   private void compileAndLoadShaderProgram(Context context) throws IOException {

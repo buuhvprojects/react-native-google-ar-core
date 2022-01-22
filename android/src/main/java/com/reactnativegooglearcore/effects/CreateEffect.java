@@ -14,13 +14,15 @@ public class CreateEffect implements AugmentedFaceInterface {
   Context context;
   ArrayList<FaceRegion> landmarks = new ArrayList<>();
   ArrayList<FaceRegion> landmarksTexture = new ArrayList<>();
+  boolean devMode = false;
 
   public AugmentedFaceRegions face;
   private ArrayList<Object3D> object3Ds;
 
-  public CreateEffect(Context context, ArrayList<Object3D> object3Ds) {
+  public CreateEffect(Context context, ArrayList<Object3D> object3Ds, boolean devMode) {
     this.context = context;
     this.object3Ds = object3Ds;
+    this.devMode = devMode;
   }
 
   @Override
@@ -39,7 +41,7 @@ public class CreateEffect implements AugmentedFaceInterface {
     cleanObjects();
     for (Object3D object3D: object3Ds) {
       if (!object3D.object.isEmpty()) {
-        landmarks.add(new FaceRegion(context));
+        landmarks.add(new FaceRegion(context, devMode));
         landmarks.get(landmarks.size() - 1)
           .create(
             object3D.object,
@@ -47,7 +49,7 @@ public class CreateEffect implements AugmentedFaceInterface {
             object3D.regionType
           );
       } else {
-        landmarksTexture.add(new FaceRegion(context));
+        landmarksTexture.add(new FaceRegion(context, devMode));
         landmarksTexture.get(landmarksTexture.size() - 1)
           .createMakeup(object3D.texture);
       }

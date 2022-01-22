@@ -1,0 +1,1 @@
+Adicione os efeitos nesta pasta

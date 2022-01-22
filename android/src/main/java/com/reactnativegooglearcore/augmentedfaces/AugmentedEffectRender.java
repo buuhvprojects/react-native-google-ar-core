@@ -77,6 +77,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
   SaveBitmap saveBitmap = new SaveBitmap();
 
   private boolean isObjChanged = true;
+  private boolean devMode = false;
 
   public Map<String,AugmentedFaceInterface> effects = new HashMap<>();
   private String effectKey = "";
@@ -113,6 +114,10 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     this.effectKey = effectKey;
   }
 
+  public void setDevMode(Boolean devMode) {
+    this.devMode = devMode;
+  }
+
   public void setEffects(String jsonString) {
     try {
       this.effects.clear();
@@ -135,7 +140,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
           arrayList.add(object3D);
         }
-        CreateEffect createEffect = new CreateEffect(reactContext, arrayList);
+        CreateEffect createEffect = new CreateEffect(reactContext, arrayList, devMode);
         this.effects.put(key, createEffect);
       }
       isObjChanged = true;

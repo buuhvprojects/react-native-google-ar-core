@@ -75,7 +75,7 @@ public class AugmentedFaceRenderer {
 
   public AugmentedFaceRenderer() {}
 
-  public void createOnGlThread(Context context, String diffuseTextureAssetName) throws IOException {
+  public void createOnGlThread(Context context, String diffuseTextureAssetName, boolean devMode) throws IOException {
     final int vertexShader =
         ShaderUtil.loadGLShader(TAG, context, GLES20.GL_VERTEX_SHADER, VERTEX_SHADER_NAME);
     final int fragmentShader =
@@ -102,11 +102,13 @@ public class AugmentedFaceRenderer {
 
     GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
     GLES20.glGenTextures(1, textureId, 0);
-    loadTexture(context, textureId, diffuseTextureAssetName);
+    loadTexture(context, textureId, diffuseTextureAssetName, devMode);
   }
   @NonNull
-  private static InputStream readFile(String filePath, Context context) throws FileNotFoundException {
-    String DIRECTORY = context.getExternalFilesDir(null).getAbsolutePath();
+  private static InputStream readFile(String filePath, Context context, boolean devMode) throws FileNotFoundException {
+    String DIRECTORY =
+      devMode == true ? context.getAssets().toString()
+        : context.getExternalFilesDir(null).getAbsolutePath();
     File file = new File(DIRECTORY + "/" + filePath);
     try {
       if (!file.exists()) throw new Exception("File To Render not found");
@@ -116,9 +118,9 @@ public class AugmentedFaceRenderer {
     InputStream inputStream = new FileInputStream(file);
     return inputStream;
   }
-  private static void loadTexture(Context context, int[] textureId, String filename)
+  private static void loadTexture(Context context, int[] textureId, String filename, boolean devMode)
       throws IOException {
-    Bitmap textureBitmap = BitmapFactory.decodeStream(readFile(filename, context));
+    Bitmap textureBitmap = BitmapFactory.decodeStream(readFile(filename, context, devMode));
     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0]);
     GLES20.glTexParameteri(
         GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);

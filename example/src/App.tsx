@@ -15,34 +15,11 @@ import GoogleArCoreView, {
 } from 'react-native-google-ar-core';
 
 const App = () => {
-    const [effectKey, setEffectKey] = useState('');
-    const [isReady] = useState(true);
+    const [effectKey] = useState('');
     const effects = useMemo(() => {
-        if (!isReady) return [];
-        const data: EffectData[] = [
-            {
-                key: 'sukuna',
-                effect: [
-                    {
-                        object: '',
-                        texture: 'models/sukuna_texture.png',
-                        region: 'NOSE_TIP',
-                    },
-                ],
-            },
-            {
-                key: 'hellokity',
-                effect: [
-                    {
-                        object: '',
-                        texture: 'models/hellokity_texture.png',
-                        region: 'NOSE_TIP',
-                    },
-                ],
-            },
-        ];
+        const data: EffectData[] = [];
         return data;
-    }, [isReady]);
+    }, []);
     
     const onPress = async () => {
         const response = await GoogleArCoreCapture();
@@ -58,22 +35,17 @@ const App = () => {
     const onFailedCapture = (event: OnFailedCapture) => {
         console.log('OnFailedCapture', event);
     }
-    const onChangeEffect = () => {
-        setEffectKey(effectKey === 'sukuna' ? 'hellokity' : 'sukuna');
-    }
     return (
         <GoogleArCoreView
             onChange={onChange}
             imagesDir='/MyApp'
             effects={effects}
             effectKey={effectKey}
-            onFailedCapture={onFailedCapture}>
+            onFailedCapture={onFailedCapture}
+            devMode={true}>
             <View style={styles.mainContent}>
                 <TouchableOpacity onPress={onPress} style={styles.button}>
                     <Text style={styles.title}>Tirar foto</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onChangeEffect} style={styles.button}>
-                    <Text style={styles.title}>Alternar</Text>
                 </TouchableOpacity>
             </View>
         </GoogleArCoreView>

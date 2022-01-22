@@ -127,7 +127,12 @@ interface GoogleArCoreViewProps {
     /**
      * Lista com os efeitos
      */
-    effects?: EffectData[]
+    effects?: EffectData[];
+    /**
+     * Os efeitos são carregados a partir da pasta assets, assim você pode testar a construção de efeitos
+     * @todo funciona apenas no Android
+     */
+    devMode?: boolean;
 };
 export type RecordingStatus = 'STARTED' | 'STOPPED' | 'FAILED';
 

@@ -113,6 +113,13 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
     }
   }
 
+  @ReactProp(name = "devMode")
+  public void setEffects(View view, @Nullable Boolean value) {
+    if (augmentedEffectRender != null){
+      augmentedEffectRender.setDevMode(value);
+    }
+  }
+
   public void startRecording(Promise promise) {
     if (augmentedEffectRender != null) {
       augmentedEffectRender.startRecording(promise);
