@@ -106,17 +106,17 @@ public class GoogleArCoreViewManager extends ViewGroupManager<CoordinatorLayout>
     }
   }
 
+  @ReactProp(name = "devMode")
+  public void setDevMode(View view, @Nullable boolean value) {
+    if (augmentedEffectRender != null){
+      augmentedEffectRender.setDevMode(value);
+    }
+  }
+
   @ReactProp(name = "effects")
   public void setEffects(View view, @Nullable String effects) {
     if (augmentedEffectRender != null){
       augmentedEffectRender.setEffects(effects);
-    }
-  }
-
-  @ReactProp(name = "devMode")
-  public void setEffects(View view, @Nullable Boolean value) {
-    if (augmentedEffectRender != null){
-      augmentedEffectRender.setDevMode(value);
     }
   }
 

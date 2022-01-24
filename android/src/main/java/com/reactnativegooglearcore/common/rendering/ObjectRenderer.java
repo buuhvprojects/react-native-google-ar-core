@@ -135,11 +135,11 @@ public class ObjectRenderer {
   private int depthTextureId;
 
   @NonNull
-  private InputStream readFile(String filePath, Context context, boolean devMode) throws FileNotFoundException {
-
-    String DIRECTORY =
-      devMode == true ? context.getAssets().toString()
-        : context.getExternalFilesDir(null).getAbsolutePath();
+  private InputStream readFile(String filePath, Context context, boolean devMode) throws IOException {
+    if (devMode == true) {
+      return context.getAssets().open(filePath);
+    }
+    String DIRECTORY = context.getExternalFilesDir(null).getAbsolutePath();
     File file = new File(DIRECTORY + "/" + filePath);
     try {
       if (!file.exists()) throw new Exception("File To Render not found");

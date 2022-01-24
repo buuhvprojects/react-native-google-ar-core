@@ -200,6 +200,7 @@ export const stopSession = async (): Promise<boolean> => {
 }
 interface CustomViewProps extends Omit<GoogleArCoreViewProps, 'effects'> {
     effects: string;
+    devMode: boolean;
 }
 const isNullComponent = () => {
     return UIManager.getViewManagerConfig(ComponentName) != null;
@@ -242,6 +243,7 @@ const GoogleArCoreView = (props: GoogleArCoreViewProps) => {
     return (
         <CustomView
             {...props}
+            devMode={props.devMode || false}
             effects={JSON.stringify(props.effects || "")}
             style={[{ flex: 1 }, props.style]}
         />

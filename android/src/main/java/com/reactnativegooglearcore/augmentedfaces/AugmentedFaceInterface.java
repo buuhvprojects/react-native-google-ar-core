@@ -16,6 +16,7 @@ public interface AugmentedFaceInterface {
 
   ArrayList<Object3D> object3Ds = new ArrayList<>();
 
+  void setDevMode(boolean value);
   boolean requireTexture();
   void createObjects();
   void cleanObjects();

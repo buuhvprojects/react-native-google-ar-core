@@ -114,8 +114,11 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
     this.effectKey = effectKey;
   }
 
-  public void setDevMode(Boolean devMode) {
+  public void setDevMode(boolean devMode) {
     this.devMode = devMode;
+    effects.forEach((s, effect) -> {
+      effect.setDevMode(this.devMode);
+    });
   }
 
   public void setEffects(String jsonString) {
@@ -140,7 +143,7 @@ public class AugmentedEffectRender implements GLSurfaceView.Renderer {
 
           arrayList.add(object3D);
         }
-        CreateEffect createEffect = new CreateEffect(reactContext, arrayList, devMode);
+        CreateEffect createEffect = new CreateEffect(reactContext, arrayList);
         this.effects.put(key, createEffect);
       }
       isObjChanged = true;

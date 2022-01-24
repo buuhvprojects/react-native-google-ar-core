@@ -12,12 +12,23 @@ import GoogleArCoreView, {
     OnChangeEvent,
     OnFailedCapture,
     EffectData,
-} from 'react-native-google-ar-core';
+} from '@buuhvprojects/react-native-google-ar-core';
 
 const App = () => {
-    const [effectKey] = useState('');
+    const [effectKey] = useState('teste');
     const effects = useMemo(() => {
-        const data: EffectData[] = [];
+        const data: EffectData[] = [
+            {
+                key: 'teste',
+                effect: [
+                    {
+                        region: 'FOREHEAD_CENTER',
+                        object: 'models/hear-pink-crown-2d/object.obj',
+                        texture: 'models/hear-pink-crown-2d/texture.png'
+                    }
+                ]
+            }
+        ];
         return data;
     }, []);
     

@@ -23,7 +23,10 @@ public class FaceRegion {
   public FaceRegion(Context context, boolean devMode) {
     this.context = context;
     this.devMode = devMode;
-    this.objectRenderer.devMode = devMode;
+  }
+
+  public void setDevMode(boolean value) {
+    this.devMode = value;
   }
 
   public void create(String object3d, String objectTexture, AugmentedFaceRegions.RegionType regionType) {

@@ -19,10 +19,9 @@ public class CreateEffect implements AugmentedFaceInterface {
   public AugmentedFaceRegions face;
   private ArrayList<Object3D> object3Ds;
 
-  public CreateEffect(Context context, ArrayList<Object3D> object3Ds, boolean devMode) {
+  public CreateEffect(Context context, ArrayList<Object3D> object3Ds) {
     this.context = context;
     this.object3Ds = object3Ds;
-    this.devMode = devMode;
   }
 
   @Override
@@ -89,6 +88,17 @@ public class CreateEffect implements AugmentedFaceInterface {
         modelMatrix,
         colorCorrectionRgba
       );
+    }
+  }
+
+  @Override
+  public void setDevMode(boolean devMode) {
+    this.devMode = devMode;
+    for (FaceRegion landmark: landmarksTexture) {
+      landmark.setDevMode(this.devMode);
+    }
+    for (FaceRegion landmark: landmarks) {
+      landmark.setDevMode(this.devMode);
     }
   }
 }
