@@ -2,6 +2,8 @@
 
 The Augmented Faces API lets you render assets on top of human faces without using specialized hardware. It offers feature points that allow your app to automatically identify different regions of a detected face. Your app can then use these regions to overlay assets in a way that matches the contours of an individual face.
 
+Currently this library only supports Android. But we are accepting collaborators to integrate the IOS part.
+
 ## Support
 For now it only support to Android. Help-us to improve!
 
